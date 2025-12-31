@@ -1,0 +1,16 @@
+# Pastas gigantes que se instalam sozinhas
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Ficheiros de Build (o que o computador gera)
+dist/
+build/
+
+# Ficheiros com Passwords (SEGURANÇA MÁXIMA!)
+.env
+.env.local
+
+# Ficheiros do sistema operativo
+.DS_Store
+Thumbs.db
