@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, MapPin, Bell, Navigation, Send, User, Car, Footprints, CornerUpRight, XCircle, ExternalLink } from 'lucide-react';
 import RouteMap from './RouteMap';
 
@@ -14,8 +14,6 @@ function StationDetails({ station, onBack }) {
   const [gpsError, setGpsError] = useState(null);
   const [routeInfo, setRouteInfo] = useState(null); 
   const [travelMode, setTravelMode] = useState('driving');
-  
-  const watchIdRef = useRef(null);
 
   // Estados de Comentários
   const [newReview, setNewReview] = useState("");
@@ -60,7 +58,7 @@ function StationDetails({ station, onBack }) {
     finally { setSubmitting(false); }
   };
 
-  // --- INICIAR GPS (OTIMIZADO PARA PC) ---
+  // --- INICIAR GPS (CORRIGIDO PARA PORTÁTEIS/REDES RESTRITAS) ---
   const startNavigation = () => {
     if (!station.latitude || !station.longitude) return alert("Sem coordenadas.");
 
@@ -68,7 +66,7 @@ function StationDetails({ station, onBack }) {
       setIsNavigating(true);
       setGpsError(null); // Limpa erros antigos
 
-      const id = navigator.geolocation.watchPosition(
+      navigator.geolocation.getCurrentPosition(
         (position) => {
           // SUCESSO!
           setUserLocation({
@@ -78,22 +76,25 @@ function StationDetails({ station, onBack }) {
           setGpsError(null);
         },
         (error) => {
-          // ERRO
+          // ERRO!
           console.error("Erro GPS:", error);
-          if (error.code === 1) setGpsError("Permissão de localização negada.");
-          else if (error.code === 2) setGpsError("Sinal GPS indisponível.");
-          else if (error.code === 3) setGpsError("O GPS demorou demasiado tempo.");
-          else setGpsError("À procura de sinal GPS...");
+          
+          // CRUCIAL: Tira a app do estado de "loading infinito"
+          setIsNavigating(false); 
+          
+          if (error.code === 1) alert("Permissão de localização negada.");
+          else if (error.code === 2) alert("Sinal GPS indisponível nesta rede.");
+          else if (error.code === 3) alert("O GPS demorou demasiado tempo (Timeout). A firewall da rede pode estar a bloquear o pedido.");
+          else alert("Erro ao procurar sinal GPS...");
         },
         { 
-          enableHighAccuracy: false, // <--- IMPORTANTE: false é mais rápido em PCs/Wifi
-          timeout: 20000,            // Espera até 20 segundos antes de desistir
-          maximumAge: 10000          // Aceita posições de até 10 segundos atrás
+          enableHighAccuracy: false, // false é mais rápido em PCs/Wifi
+          timeout: 10000,            // Desiste ao fim de 10s se a rede da universidade bloquear
+          maximumAge: 0 
         }
       );
-      watchIdRef.current = id;
     } else {
-      setGpsError("O teu browser não suporta GPS.");
+      alert("O teu browser não suporta GPS.");
     }
   };
 
@@ -102,18 +103,8 @@ function StationDetails({ station, onBack }) {
     setIsNavigating(false);
     setUserLocation(null);
     setRouteInfo(null);
-    if (watchIdRef.current !== null) {
-      navigator.geolocation.clearWatch(watchIdRef.current);
-      watchIdRef.current = null;
-    }
+    setGpsError(null);
   };
-
-  // Limpeza ao sair da página
-  useEffect(() => {
-    return () => {
-      if (watchIdRef.current !== null) navigator.geolocation.clearWatch(watchIdRef.current);
-    };
-  }, []);
 
   if (!station) return null;
 
@@ -240,7 +231,7 @@ function StationDetails({ station, onBack }) {
                      <div className="mb-8 p-4 bg-blue-50 rounded-xl border border-blue-100 animate-fade-in">
                         <p className="text-sm text-blue-800 mb-3 font-medium">Preferes a app oficial?</p>
                         <button 
-                            onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${station.latitude},${station.longitude}`, '_blank')}
+                            onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=$${station.latitude},${station.longitude}`, '_blank')}
                             className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 shadow-sm hover:bg-blue-700 transition-colors"
                         >
                             <ExternalLink size={18} /> Abrir Google Maps
