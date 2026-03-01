@@ -8,6 +8,7 @@ import StationDetails from './components/StationDetails';
 import SearchBar from './components/SearchBar';
 import AuthScreen from './components/AuthScreen';
 import AddStation from './components/AddStation'; // A tua nova página
+import EditStation from './components/EditStation';
 
 // =========================================================
 // 1. COMPONENTE "HOME" (O teu código antigo vive aqui agora)
@@ -193,9 +194,12 @@ function App() {
       <Routes>
         {/* A Rota Principal carrega o componente Home (o teu código antigo) */}
         <Route path="/" element={<Home />} />
-        
+
         {/* A Nova Rota carrega o componente AddStation */}
         <Route path="/admin/add" element={<AddStation />} />
+
+        {/* --- ADICIONA ESTA LINHA AQUI --- */}
+        <Route path="/admin/edit/:id" element={<EditStation />} />
       </Routes>
     </Router>
   );

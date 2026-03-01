@@ -23,7 +23,7 @@ exports.getReviewsByStation = async (req, res) => {
 exports.addReview = async (req, res) => {
   const { stationId } = req.params;
   const { content } = req.body;
-  const userId = req.user.id; // Vem do token de autenticação
+  const userId = req.user.id; 
 
   try {
     const query = `
@@ -38,5 +38,24 @@ exports.addReview = async (req, res) => {
   } catch (error) {
     console.error('Erro ao adicionar comentário:', error);
     res.status(500).json({ error: 'Erro interno' });
+  }
+};
+
+// NOVA FUNÇÃO: Eliminar um comentário (RF19)
+exports.deleteReview = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const query = 'DELETE FROM reviews WHERE id = $1 RETURNING *;';
+    const { rows } = await db.query(query, [id]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Comentário não encontrado.' });
+    }
+
+    res.json({ message: 'Comentário eliminado com sucesso!' });
+  } catch (error) {
+    console.error('Erro ao eliminar comentário:', error);
+    res.status(500).json({ error: 'Erro ao eliminar comentário na base de dados.' });
   }
 };
