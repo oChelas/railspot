@@ -1,48 +1,65 @@
 const db = require('../config/db');
 
-// Ler horários de uma estação
 exports.getSchedulesByStation = async (req, res) => {
   const { stationId } = req.params;
   try {
-    const query = 'SELECT * FROM schedules WHERE station_id = $1 ORDER BY departure_time ASC;';
-    const { rows } = await db.query(query, [stationId]);
-    res.json(rows);
+    const result = await db.query(
+      'SELECT * FROM schedules WHERE station_id = $1 ORDER BY departure_time ASC',
+      [stationId]
+    );
+    res.json(result.rows ? result.rows : result);
   } catch (error) {
-    console.error('Erro ao buscar horários:', error);
-    res.status(500).json({ error: 'Erro interno' });
+    console.error('Erro ao buscar horários:', error.message);
+    res.status(500).json({ error: 'Erro interno no servidor' });
   }
 };
 
-// Adicionar um novo horário (Apenas Admin)
 exports.addSchedule = async (req, res) => {
   const { stationId } = req.params;
-  const { train_type, destination, departure_time } = req.body;
+  const { departure_time, destination, line, train_type } = req.body;
+
+  if (!departure_time || !destination || !line) {
+    return res.status(400).json({ error: 'Preenche todos os campos obrigatórios.' });
+  }
 
   try {
-    const query = `
-      INSERT INTO schedules (station_id, train_type, destination, departure_time)
-      VALUES ($1, $2, $3, $4)
-      RETURNING *;
-    `;
-    const { rows } = await db.query(query, [stationId, train_type, destination, departure_time]);
-    res.status(201).json(rows[0]);
+    // ATENÇÃO: Confirma se as tuas colunas se chamam departure_time, destination, line, train_type
+    const result = await db.query(
+      'INSERT INTO schedules (station_id, departure_time, destination, line, train_type) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+      [stationId, departure_time, destination, line, train_type || 'Urbano']
+    );
+
+    const insertId = result.rows && result.rows.length > 0 ? result.rows[0].id : null;
+
+    res.status(201).json({ 
+      message: 'Horário adicionado com sucesso!',
+      schedule: {
+        id: insertId,
+        station_id: stationId,
+        departure_time,
+        destination,
+        line,
+        train_type: train_type || 'Urbano'
+      }
+    });
   } catch (error) {
-    console.error('Erro ao adicionar horário:', error);
-    res.status(500).json({ error: 'Erro ao guardar na base de dados.' });
+    // DEBUG AVANÇADO PARA DESCOBRIR O ERRO EXATO
+    console.error('\n--- 🚨 ERRO SQL AO ADICIONAR HORÁRIO ---');
+    console.error('Mensagem de Erro:', error.message);
+    console.error('Detalhe do Postgres:', error.detail);
+    console.error('Tabela a falhar:', error.table);
+    console.error('----------------------------------------\n');
+    res.status(500).json({ error: 'Erro ao guardar na BD: ' + error.message });
   }
 };
 
-// Eliminar um horário (Apenas Admin)
 exports.deleteSchedule = async (req, res) => {
   const { id } = req.params;
   try {
-    const query = 'DELETE FROM schedules WHERE id = $1 RETURNING *;';
-    const { rows } = await db.query(query, [id]);
-    
-    if (rows.length === 0) return res.status(404).json({ error: 'Horário não encontrado.' });
-    res.json({ message: 'Horário eliminado com sucesso!' });
+    await db.query('DELETE FROM schedules WHERE id = $1', [id]);
+    res.json({ message: 'Horário apagado com sucesso.' });
   } catch (error) {
-    console.error('Erro ao eliminar horário:', error);
-    res.status(500).json({ error: 'Erro interno' });
+    console.error('Erro ao apagar horário:', error.message);
+    res.status(500).json({ error: 'Erro ao apagar horário.' });
   }
 };

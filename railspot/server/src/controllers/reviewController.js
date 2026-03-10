@@ -1,61 +1,72 @@
 const db = require('../config/db');
 
-// Listar comentários de uma estação
 exports.getReviewsByStation = async (req, res) => {
   const { stationId } = req.params;
   try {
-    const query = `
-      SELECT r.id, r.content, r.created_at, u.name as user_name 
-      FROM reviews r
-      JOIN users u ON r.user_id = u.id
-      WHERE r.station_id = $1
-      ORDER BY r.created_at DESC;
-    `;
-    const { rows } = await db.query(query, [stationId]);
-    res.json(rows);
+    const result = await db.query(
+      `SELECT r.*, u.name as user_name 
+       FROM reviews r 
+       JOIN users u ON r.user_id = u.id 
+       WHERE r.station_id = $1 
+       ORDER BY r.created_at DESC`,
+      [stationId]
+    );
+    res.json(result.rows ? result.rows : result);
   } catch (error) {
-    console.error('Erro ao buscar comentários:', error);
-    res.status(500).json({ error: 'Erro interno' });
+    console.error('Erro ao buscar reviews:', error.message);
+    res.status(500).json({ error: 'Erro interno no servidor' });
   }
 };
 
-// Adicionar um comentário (Só para utilizadores autenticados)
 exports.addReview = async (req, res) => {
   const { stationId } = req.params;
-  const { content } = req.body;
-  const userId = req.user.id; 
+  const { comment } = req.body; // <-- Confirma que o React envia o JSON com "comment"
+  
+  if (!req.user || !req.user.id) {
+     return res.status(401).json({ error: 'Utilizador não autenticado.' });
+  }
+  const userId = req.user.id;
+
+  if (!comment || comment.trim() === '') {
+    return res.status(400).json({ error: 'O comentário/ocorrência não pode estar vazio.' });
+  }
 
   try {
-    const query = `
-      INSERT INTO reviews (user_id, station_id, content)
-      VALUES ($1, $2, $3)
-      RETURNING id, content, created_at;
-    `;
-    const { rows } = await db.query(query, [userId, stationId, content]);
+    // ATENÇÃO: Confirma se as colunas na tua tabela se chamam mesmo station_id, user_id e comment
+    const result = await db.query(
+      'INSERT INTO reviews (station_id, user_id, comment) VALUES ($1, $2, $3) RETURNING id',
+      [stationId, userId, comment]
+    );
     
-    // Devolvemos o comentário já com o nome do utilizador para aparecer logo
-    res.json({ ...rows[0], user_name: req.user.name });
+    const insertId = result.rows && result.rows.length > 0 ? result.rows[0].id : null;
+    
+    res.status(201).json({ 
+      message: 'Ocorrência adicionada com sucesso!',
+      review: {
+        id: insertId,
+        station_id: stationId,
+        user_id: userId,
+        comment: comment
+      }
+    });
   } catch (error) {
-    console.error('Erro ao adicionar comentário:', error);
-    res.status(500).json({ error: 'Erro interno' });
+    // DEBUG AVANÇADO PARA DESCOBRIR O ERRO EXATO
+    console.error('\n--- 🚨 ERRO SQL AO ADICIONAR OCORRÊNCIA ---');
+    console.error('Mensagem de Erro:', error.message);
+    console.error('Detalhe do Postgres:', error.detail);
+    console.error('Tabela a falhar:', error.table);
+    console.error('-------------------------------------------\n');
+    res.status(500).json({ error: 'Erro ao guardar na BD: ' + error.message });
   }
 };
 
-// NOVA FUNÇÃO: Eliminar um comentário (RF19)
 exports.deleteReview = async (req, res) => {
   const { id } = req.params;
-
   try {
-    const query = 'DELETE FROM reviews WHERE id = $1 RETURNING *;';
-    const { rows } = await db.query(query, [id]);
-
-    if (rows.length === 0) {
-      return res.status(404).json({ error: 'Comentário não encontrado.' });
-    }
-
-    res.json({ message: 'Comentário eliminado com sucesso!' });
+    await db.query('DELETE FROM reviews WHERE id = $1', [id]);
+    res.json({ message: 'Comentário apagado com sucesso.' });
   } catch (error) {
-    console.error('Erro ao eliminar comentário:', error);
-    res.status(500).json({ error: 'Erro ao eliminar comentário na base de dados.' });
+    console.error('Erro ao apagar comentário:', error.message);
+    res.status(500).json({ error: 'Erro ao apagar comentário.' });
   }
 };

@@ -3,13 +3,13 @@ const router = express.Router();
 const reviewController = require('../controllers/reviewController');
 const auth = require('../middleware/authMiddleware');
 
-// Qualquer pessoa pode LER
+// Rota pública para listar os comentários/ocorrências de uma estação
 router.get('/:stationId', reviewController.getReviewsByStation);
 
-// Só quem tem login (auth) pode ESCREVER
+// Rota privada para adicionar um comentário (requer login/token válido)
 router.post('/:stationId', auth, reviewController.addReview);
 
-// NOVA ROTA: Administradores podem ELIMINAR (Protegido por auth)
+// Rota privada para apagar um comentário (opcional)
 router.delete('/:id', auth, reviewController.deleteReview);
 
 module.exports = router;
