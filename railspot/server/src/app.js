@@ -7,19 +7,28 @@ const stationRoutes = require('./routes/stationRoutes');
 const authRoutes = require('./routes/authRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 const scheduleRoutes = require('./routes/scheduleRoutes');
+const occurrenceRoutes = require('./routes/occurrenceRoutes');
 
-// --- MIDDLEWARE ---
-app.use(cors()); // Desbloqueia o acesso do Frontend
-app.use(express.json()); // Permite ler dados JSON
+// --- 🚨 MIDDLEWARE DE CORS CORRIGIDO ---
+// Permite que o React (porta 5173) consiga enviar pedidos e tokens para o Express
+app.use(cors({
+  origin: 'http://localhost:5173',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Permite ao Express ler JSON no body
+app.use(express.json());
 
 // --- ROTAS ---
 app.use('/api/stations', stationRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/schedules', scheduleRoutes);
+app.use('/api/occurrences', occurrenceRoutes);
 
-// --- CORREÇÃO: INICIAR O SERVIDOR (Faltava isto!) ---
-const PORT = 5000;
+// Iniciar Servidor
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Servidor a correr na porta ${PORT} 🚀`);
 });

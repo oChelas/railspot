@@ -16,17 +16,19 @@ exports.getSchedulesByStation = async (req, res) => {
 
 exports.addSchedule = async (req, res) => {
   const { stationId } = req.params;
-  const { departure_time, destination, line, train_type } = req.body;
+  // 1. Removemos a 'line' daqui
+  const { departure_time, destination, train_type } = req.body;
 
-  if (!departure_time || !destination || !line) {
-    return res.status(400).json({ error: 'Preenche todos os campos obrigatórios.' });
+  // 2. Removemos a 'line' da validação
+  if (!departure_time || !destination) {
+    return res.status(400).json({ error: 'Preenche a Hora e o Destino.' });
   }
 
   try {
-    // ATENÇÃO: Confirma se as tuas colunas se chamam departure_time, destination, line, train_type
+    // 3. Removemos a 'line' e o $5 da Query de SQL para bater certo com a tua tabela!
     const result = await db.query(
-      'INSERT INTO schedules (station_id, departure_time, destination, line, train_type) VALUES ($1, $2, $3, $4, $5) RETURNING id',
-      [stationId, departure_time, destination, line, train_type || 'Urbano']
+      'INSERT INTO schedules (station_id, departure_time, destination, train_type) VALUES ($1, $2, $3, $4) RETURNING id',
+      [stationId, departure_time, destination, train_type || 'Urbano']
     );
 
     const insertId = result.rows && result.rows.length > 0 ? result.rows[0].id : null;
@@ -38,17 +40,12 @@ exports.addSchedule = async (req, res) => {
         station_id: stationId,
         departure_time,
         destination,
-        line,
         train_type: train_type || 'Urbano'
       }
     });
   } catch (error) {
-    // DEBUG AVANÇADO PARA DESCOBRIR O ERRO EXATO
     console.error('\n--- 🚨 ERRO SQL AO ADICIONAR HORÁRIO ---');
     console.error('Mensagem de Erro:', error.message);
-    console.error('Detalhe do Postgres:', error.detail);
-    console.error('Tabela a falhar:', error.table);
-    console.error('----------------------------------------\n');
     res.status(500).json({ error: 'Erro ao guardar na BD: ' + error.message });
   }
 };
