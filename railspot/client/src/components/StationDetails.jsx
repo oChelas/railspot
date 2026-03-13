@@ -46,8 +46,10 @@ function StationDetails({ station, onBack }) {
   const [newSchedule, setNewSchedule] = useState({ train_type: 'Urbano', destination: '', departure_time: '' });
   const [submitting, setSubmitting] = useState(false);
 
-  // --- INTERFACE ---
+  // --- INTERFACE (TOASTS E DIALOGS) ---
   const [toast, setToast] = useState(null);
+  const [dialog, setDialog] = useState({ isOpen: false, title: '', message: '', type: 'danger', onConfirm: null });
+  
   const [user] = useState(() => {
     try {
       const savedUser = localStorage.getItem('user');
@@ -58,6 +60,14 @@ function StationDetails({ station, onBack }) {
   const showToast = (message, type = 'info') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 6000);
+  };
+
+  const openDialog = (title, message, type, onConfirm) => {
+    setDialog({ isOpen: true, title, message, type, onConfirm });
+  };
+
+  const closeDialog = () => {
+    setDialog(prev => ({ ...prev, isOpen: false }));
   };
 
   // --- VARIAVEL DE CONTROLO PARA O ESLINT ---
@@ -124,7 +134,8 @@ function StationDetails({ station, onBack }) {
         setNewReview("");
         showToast("Comentário adicionado!", "success");
       } else {
-        showToast("Erro ao adicionar comentário.", "error");
+        const errorData = await res.json().catch(() => ({}));
+        showToast(errorData.error || "Erro ao adicionar comentário.", "error");
       }
     } catch {
       showToast("Erro de ligação.", "error");
@@ -133,46 +144,48 @@ function StationDetails({ station, onBack }) {
     }
   };
 
-  const handleDeleteReview = async (reviewId) => {
-    if (!window.confirm("Apagar este comentário?")) return;
-    const token = localStorage.getItem('token');
-    try {
-      const res = await fetch(`http://localhost:5000/api/reviews/${reviewId}`, {
-        method: 'DELETE',
-        headers: { 'x-auth-token': token }
-      });
-      if (res.ok) {
-        setReviews(reviews.filter(r => r.id !== reviewId));
-        showToast("Comentário apagado.", "info");
-      } else {
-        showToast("Erro ao apagar.", "error");
+  const handleDeleteReview = (reviewId) => {
+    openDialog("Apagar Comentário", "Tens a certeza que queres eliminar este comentário? Esta ação é irreversível.", "danger", async () => {
+      const token = localStorage.getItem('token');
+      try {
+        const res = await fetch(`http://localhost:5000/api/reviews/${reviewId}`, {
+          method: 'DELETE',
+          headers: { 'x-auth-token': token }
+        });
+        if (res.ok) {
+          setReviews(reviews.filter(r => r.id !== reviewId));
+          showToast("Comentário apagado.", "info");
+        } else {
+          showToast("Erro ao apagar.", "error");
+        }
+      } catch {
+        showToast("Erro no servidor.", "error");
       }
-    } catch {
-      showToast("Erro no servidor.", "error");
-    }
+    });
   };
 
   // --- FUNCOES DA ESTACAO ---
-  const handleDeleteStation = async () => {
-    if (!window.confirm(`Tens a certeza absoluta que pretendes eliminar a ${station.name}?`)) return;
-    const token = localStorage.getItem('token');
-    try {
-      const res = await fetch(`http://localhost:5000/api/stations/${stationId}`, {
-        method: 'DELETE',
-        headers: { 'x-auth-token': token }
-      });
-      if (res.ok) {
-        showToast('Estação eliminada com sucesso!', 'success');
-        setTimeout(() => {
-          onBack();
-          window.location.reload();
-        }, 1500);
-      } else {
-        showToast('Erro ao apagar estação.', 'error');
+  const handleDeleteStation = () => {
+    openDialog("Eliminar Estação", `Tens a certeza absoluta que pretendes eliminar a ${station.name}? Todos os dados, horários e ocorrências serão apagados.`, "danger", async () => {
+      const token = localStorage.getItem('token');
+      try {
+        const res = await fetch(`http://localhost:5000/api/stations/${stationId}`, {
+          method: 'DELETE',
+          headers: { 'x-auth-token': token }
+        });
+        if (res.ok) {
+          showToast('Estação eliminada com sucesso!', 'success');
+          setTimeout(() => {
+            onBack();
+            window.location.reload();
+          }, 1500);
+        } else {
+          showToast('Erro ao apagar estação.', 'error');
+        }
+      } catch {
+        showToast('Erro no servidor.', 'error');
       }
-    } catch {
-      showToast('Erro no servidor.', 'error');
-    }
+    });
   };
 
   // --- FUNCOES DE OCORRENCIAS ---
@@ -199,7 +212,8 @@ function StationDetails({ station, onBack }) {
             setNewOccurrence("");
             fetchOccurrences();
           } else {
-            showToast("Erro ao reportar ocorrência.", "error");
+            const errorData = await res.json().catch(() => ({}));
+            showToast(errorData.error || "Erro ao reportar ocorrência.", "error");
           }
         } catch {
           showToast("Erro de conexão.", "error");
@@ -215,29 +229,32 @@ function StationDetails({ station, onBack }) {
     );
   };
 
-  const handleDeleteOccurrence = async (occId) => {
-    if (!window.confirm("Dar esta ocorrência como resolvida?")) return;
-    const token = localStorage.getItem('token');
-    try {
-      const res = await fetch(`http://localhost:5000/api/occurrences/${occId}`, {
-        method: 'DELETE',
-        headers: { 'x-auth-token': token }
-      });
-      if (res.ok) {
-        setOccurrences(occurrences.filter(o => o.id !== occId));
-        showToast("Ocorrência marcada como resolvida.", "success");
-      } else {
-        showToast("Erro ao resolver ocorrência.", "error");
+  const handleDeleteOccurrence = (occId) => {
+    openDialog("Resolver Ocorrência", "Queres marcar esta ocorrência como resolvida? Ela será removida da lista pública.", "success", async () => {
+      const token = localStorage.getItem('token');
+      try {
+        const res = await fetch(`http://localhost:5000/api/occurrences/${occId}`, {
+          method: 'DELETE',
+          headers: { 'x-auth-token': token }
+        });
+        if (res.ok) {
+          setOccurrences(occurrences.filter(o => o.id !== occId));
+          showToast("Ocorrência marcada como resolvida.", "success");
+        } else {
+          showToast("Erro ao resolver ocorrência.", "error");
+        }
+      } catch {
+        showToast("Erro no servidor.", "error");
       }
-    } catch {
-      showToast("Erro no servidor.", "error");
-    }
+    });
   };
 
   // --- FUNCOES DE HORARIOS ---
   const handleAddSchedule = async (e) => {
     e.preventDefault();
-    if (!newSchedule.destination || !newSchedule.departure_time) return showToast("Preenche todos os campos.", "warning");
+    if (!newSchedule.destination || !newSchedule.departure_time) {
+      return showToast("Preenche todos os campos.", "warning");
+    }
 
     setSubmitting(true);
     const token = localStorage.getItem('token');
@@ -245,14 +262,20 @@ function StationDetails({ station, onBack }) {
       const res = await fetch(`http://localhost:5000/api/schedules/${stationId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-auth-token': token },
-        body: JSON.stringify(newSchedule)
+        body: JSON.stringify({
+          departureTime: newSchedule.departure_time,
+          destination: newSchedule.destination,
+          trainType: newSchedule.train_type
+        })
       });
+      
       if (res.ok) {
         showToast("Horário adicionado!", "success");
         setNewSchedule({ train_type: 'Urbano', destination: '', departure_time: '' });
         fetchSchedules();
       } else {
-        showToast("Erro ao adicionar horário.", "error");
+        const errorData = await res.json().catch(() => ({}));
+        showToast(errorData.error || "Erro ao adicionar horário.", "error");
       }
     } catch {
       showToast("Erro de conexão.", "error");
@@ -261,23 +284,24 @@ function StationDetails({ station, onBack }) {
     }
   };
 
-  const handleDeleteSchedule = async (id) => {
-    if (!window.confirm("Apagar este horário?")) return;
-    const token = localStorage.getItem('token');
-    try {
-      const res = await fetch(`http://localhost:5000/api/schedules/${id}`, {
-        method: 'DELETE',
-        headers: { 'x-auth-token': token }
-      });
-      if (res.ok) {
-        setSchedules(schedules.filter(s => s.id !== id));
-        showToast("Horário apagado.", "info");
-      } else {
-        showToast("Erro ao apagar horário.", "error");
+  const handleDeleteSchedule = (id) => {
+    openDialog("Apagar Horário", "Tens a certeza que pretendes apagar este horário da tabela?", "danger", async () => {
+      const token = localStorage.getItem('token');
+      try {
+        const res = await fetch(`http://localhost:5000/api/schedules/${id}`, {
+          method: 'DELETE',
+          headers: { 'x-auth-token': token }
+        });
+        if (res.ok) {
+          setSchedules(schedules.filter(s => s.id !== id));
+          showToast("Horário apagado.", "info");
+        } else {
+          showToast("Erro ao apagar horário.", "error");
+        }
+      } catch {
+        showToast("Erro no servidor.", "error");
       }
-    } catch {
-      showToast("Erro no servidor.", "error");
-    }
+    });
   };
 
   // --- LOGICA DE MAPAS ---
@@ -349,6 +373,34 @@ function StationDetails({ station, onBack }) {
   return (
     <div className="h-full bg-gray-50 flex flex-col animate-fade-in overflow-hidden relative">
       
+      {/* CUSTOM CONFIRM DIALOG */}
+      {dialog.isOpen && (
+        <div className="fixed inset-0 z-[6000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-3xl shadow-2xl p-6 w-full max-w-sm animate-slide-up border border-gray-100">
+            <div className="flex items-center gap-3 mb-4">
+              <div className={`p-3 rounded-full ${dialog.type === 'danger' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
+                {dialog.type === 'danger' ? <TriangleAlert size={24} /> : <CircleCheck size={24} />}
+              </div>
+              <h3 className="text-xl font-bold text-slate-900">{dialog.title}</h3>
+            </div>
+            <p className="text-gray-600 mb-8 leading-relaxed text-sm">{dialog.message}</p>
+            <div className="flex justify-end gap-3">
+              <button onClick={closeDialog} className="px-5 py-2.5 rounded-xl font-bold text-slate-600 bg-gray-100 hover:bg-gray-200 transition-colors text-sm">
+                Cancelar
+              </button>
+              <button
+                onClick={() => { dialog.onConfirm(); closeDialog(); }}
+                className={`px-5 py-2.5 rounded-xl font-bold text-white transition-transform active:scale-95 text-sm shadow-md ${
+                  dialog.type === 'danger' ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'
+                }`}
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* NOTIFICACOES (TOASTS) */}
       {toast && (
         <div className={`fixed bottom-10 left-1/2 transform -translate-x-1/2 z-[5000] w-11/12 max-w-md flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl transition-all animate-fade-in font-medium backdrop-blur-md bg-opacity-95
@@ -606,7 +658,7 @@ function StationDetails({ station, onBack }) {
                                     </div>
                                     <p className="text-sm text-gray-600">{o.description}</p>
                                     {user && user.is_admin && (
-                                      <button onClick={() => handleDeleteOccurrence(o.id)} className="absolute -top-3 -right-3 text-red-500 hover:text-white hover:bg-red-500 p-2 bg-red-50 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-all" title="Marcar como resolvido">
+                                      <button onClick={() => handleDeleteOccurrence(o.id)} className="absolute -top-3 -right-3 text-green-500 hover:text-white hover:bg-green-500 p-2 bg-green-50 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-all" title="Marcar como resolvido">
                                         <CircleCheck size={16} />
                                       </button>
                                     )}

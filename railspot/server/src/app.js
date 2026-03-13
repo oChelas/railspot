@@ -13,8 +13,9 @@ const occurrenceRoutes = require('./routes/occurrenceRoutes');
 // Permite que o React (porta 5173) consiga enviar pedidos e tokens para o Express
 app.use(cors({
   origin: 'http://localhost:5173',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Adicionado OPTIONS por segurança para preflights
+  // Adicionado 'x-auth-token' para permitir a passagem do token do frontend!
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token'] 
 }));
 
 // Permite ao Express ler JSON no body

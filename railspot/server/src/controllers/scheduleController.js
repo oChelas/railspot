@@ -16,35 +16,37 @@ exports.getSchedulesByStation = async (req, res) => {
 
 exports.addSchedule = async (req, res) => {
   const { stationId } = req.params;
-  // 1. Removemos a 'line' daqui
-  const { departure_time, destination, train_type } = req.body;
+  
+  // 1. Recebemos as variáveis em camelCase (formato em que o React envia no req.body)
+  const { departureTime, destination, trainType } = req.body;
 
-  // 2. Removemos a 'line' da validação
-  if (!departure_time || !destination) {
+  // 2. Validação usando as variáveis corretas
+  if (!departureTime || !destination) {
     return res.status(400).json({ error: 'Preenche a Hora e o Destino.' });
   }
 
   try {
-    // 3. Removemos a 'line' e o $5 da Query de SQL para bater certo com a tua tabela!
+    // 3. Injeção segura na Query SQL (colunas em snake_case, valores vindos do camelCase)
     const result = await db.query(
       'INSERT INTO schedules (station_id, departure_time, destination, train_type) VALUES ($1, $2, $3, $4) RETURNING id',
-      [stationId, departure_time, destination, train_type || 'Urbano']
+      [stationId, departureTime, destination, trainType || 'Urbano']
     );
 
     const insertId = result.rows && result.rows.length > 0 ? result.rows[0].id : null;
 
+    // 4. Devolvemos a resposta confirmando a inserção
     res.status(201).json({ 
       message: 'Horário adicionado com sucesso!',
       schedule: {
         id: insertId,
         station_id: stationId,
-        departure_time,
-        destination,
-        train_type: train_type || 'Urbano'
+        departure_time: departureTime,
+        destination: destination,
+        train_type: trainType || 'Urbano'
       }
     });
   } catch (error) {
-    console.error('\n--- 🚨 ERRO SQL AO ADICIONAR HORÁRIO ---');
+    console.error('\n--- 🚨 ERRO FATAL AO ADICIONAR HORÁRIO NA BASE DE DADOS ---');
     console.error('Mensagem de Erro:', error.message);
     res.status(500).json({ error: 'Erro ao guardar na BD: ' + error.message });
   }
