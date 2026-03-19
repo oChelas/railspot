@@ -7,669 +7,939 @@ import {
 } from 'lucide-react';
 import RouteMap from './RouteMap';
 
-// --- MATEMATICA LBS ---
+/* ─── DISTANCE UTIL ───────────────────────────────────────── */
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.sin(dLat / 2) ** 2 +
     Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
+    Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
 
+/* ─── STYLES ──────────────────────────────────────────────── */
+const CSS = `
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,900&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  .sd-root {
+    height: 100%;
+    background: #08111c;
+    display: flex;
+    flex-direction: column;
+    font-family: 'DM Sans', sans-serif;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ── SAME TILE BG ── */
+  .sd-bg {
+    position: absolute; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+  }
+  .sd-bg::before {
+    content: ''; position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect x='0.5' y='0.5' width='79' height='79' fill='none' stroke='%231a3a5c' stroke-width='0.5' opacity='0.4'/%3E%3Ccircle cx='40' cy='40' r='18' fill='none' stroke='%231a3a5c' stroke-width='0.5' opacity='0.3'/%3E%3C/svg%3E");
+  }
+
+  /* ── LAYOUT: hero image top + panel below (mobile) / side-by-side (desktop) ── */
+  .sd-layout {
+    position: relative; z-index: 1;
+    flex: 1; display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  @media (min-width: 768px) {
+    .sd-layout { flex-direction: row; }
+  }
+
+  /* ── HERO IMAGE ── */
+  .sd-hero {
+    position: relative; flex-shrink: 0;
+    height: 260px; background: #0c1e30; overflow: hidden;
+  }
+  @media (min-width: 768px) {
+    .sd-hero { height: 100%; width: 50%; }
+  }
+  .sd-hero img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform .4s cubic-bezier(.22,1,.36,1);
+  }
+  .sd-hero-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(8,17,28,.85) 0%, rgba(8,17,28,.1) 60%, transparent 100%);
+  }
+  /* Station name on hero (mobile) */
+  .sd-hero-name {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 20px 20px 16px;
+  }
+  .sd-hero-name h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(22px,5vw,28px); font-weight: 900;
+    color: #fff; letter-spacing: -.025em; line-height: 1.1; margin-bottom: 4px;
+  }
+  .sd-hero-name .sd-loc {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 11px; font-weight: 600; letter-spacing: .1em;
+    text-transform: uppercase; color: rgba(255,255,255,.4);
+  }
+  @media (min-width: 768px) {
+    .sd-hero-name { display: none; }
+  }
+
+  /* Back button */
+  .sd-back {
+    position: absolute; top: 14px; left: 14px; z-index: 20;
+    width: 38px; height: 38px; border-radius: 50%;
+    background: rgba(8,17,28,.7); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,.1);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: background .2s, transform .2s;
+    color: #fff;
+  }
+  .sd-back:hover { background: rgba(44,110,166,.5); transform: scale(1.08); }
+
+  /* Admin buttons on hero */
+  .sd-admin-btns {
+    position: absolute; top: 14px; right: 14px; z-index: 20;
+    display: flex; gap: 8px;
+  }
+  .sd-admin-btn {
+    width: 38px; height: 38px; border-radius: 50%;
+    backdrop-filter: blur(8px); border: none;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: transform .2s, opacity .2s;
+  }
+  .sd-admin-btn:hover { transform: scale(1.1); }
+  .sd-admin-btn-edit { background: rgba(44,110,166,.7); }
+  .sd-admin-btn-del  { background: rgba(239,68,68,.7); }
+
+  /* ── RIGHT PANEL ── */
+  .sd-panel {
+    flex: 1; display: flex; flex-direction: column;
+    background: #0d1a26; overflow: hidden;
+    border-top: 1px solid rgba(255,255,255,.05);
+  }
+  @media (min-width: 768px) {
+    .sd-panel {
+      width: 50%; border-top: none;
+      border-left: 1px solid rgba(255,255,255,.05);
+    }
+  }
+  .sd-panel-scroll {
+    flex: 1; overflow-y: auto; padding: 24px 22px 32px;
+    scrollbar-width: thin; scrollbar-color: rgba(44,110,166,.2) transparent;
+  }
+  .sd-panel-scroll::-webkit-scrollbar { width: 3px; }
+  .sd-panel-scroll::-webkit-scrollbar-thumb { background: rgba(44,110,166,.25); border-radius: 3px; }
+
+  /* Desktop heading (hidden on mobile — shown on hero) */
+  .sd-desktop-heading {
+    display: none;
+    margin-bottom: 20px;
+  }
+  .sd-desktop-heading h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px; font-weight: 900;
+    color: #fff; letter-spacing: -.025em; line-height: 1.1; margin-bottom: 5px;
+  }
+  .sd-desktop-heading .sd-loc {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 11px; font-weight: 600; letter-spacing: .1em;
+    text-transform: uppercase; color: rgba(255,255,255,.3);
+  }
+  @media (min-width: 768px) {
+    .sd-desktop-heading { display: block; }
+  }
+
+  /* ── ACTION BUTTONS ── */
+  .sd-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 22px; }
+  .sd-btn-nav {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 13px 16px; border-radius: 14px; border: none; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+    background: #2c6ea6; color: #fff;
+    transition: background .2s, transform .15s;
+  }
+  .sd-btn-nav:hover { background: #3a7dba; }
+  .sd-btn-nav:active { transform: scale(.97); }
+  .sd-btn-alert {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 13px 16px; border-radius: 14px; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+    background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+    color: rgba(255,255,255,.6);
+    transition: background .2s, border-color .2s, transform .15s;
+  }
+  .sd-btn-alert:hover { background: rgba(255,255,255,.08); }
+  .sd-btn-alert:active { transform: scale(.97); }
+  .sd-btn-alert.active {
+    background: rgba(245,158,11,.1); border-color: rgba(245,158,11,.3);
+    color: #fbbf24; animation: sdPulse 2s ease-in-out infinite;
+  }
+  @keyframes sdPulse { 0%,100% { opacity:1; } 50% { opacity:.65; } }
+
+  .sd-gmaps-banner {
+    background: rgba(44,110,166,.1); border: 1px solid rgba(44,110,166,.2);
+    border-radius: 14px; padding: 14px; margin-bottom: 20px;
+  }
+  .sd-gmaps-banner p { font-size: 12px; color: rgba(255,255,255,.4); margin-bottom: 10px; }
+  .sd-gmaps-btn {
+    width: 100%; display: flex; align-items: center; justify-content: center; gap: 7px;
+    padding: 11px; background: #2c6ea6; border: none; border-radius: 10px;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+    color: #fff; cursor: pointer; transition: background .2s;
+  }
+  .sd-gmaps-btn:hover { background: #3a7dba; }
+
+  /* ── TABS ── */
+  .sd-tabs {
+    display: flex; border-bottom: 1px solid rgba(255,255,255,.07);
+    margin-bottom: 20px; gap: 0; overflow-x: auto; scrollbar-width: none;
+  }
+  .sd-tabs::-webkit-scrollbar { display: none; }
+  .sd-tab {
+    padding: 10px 14px; border: none; background: transparent; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase;
+    color: rgba(255,255,255,.28); white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: color .2s, border-color .2s;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .sd-tab:hover { color: rgba(255,255,255,.6); }
+  .sd-tab.active { color: #4a8cc2; border-bottom-color: #4a8cc2; }
+  .sd-tab.active-red { color: #f87171; border-bottom-color: #f87171; }
+
+  /* ── INFO TAB ── */
+  .sd-desc {
+    font-size: 13px; color: rgba(255,255,255,.45); line-height: 1.75;
+    margin-bottom: 22px;
+  }
+
+  /* Comments box */
+  .sd-comments-box {
+    background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.06);
+    border-radius: 16px; padding: 18px;
+  }
+  .sd-comments-title {
+    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase;
+    color: rgba(255,255,255,.35); margin-bottom: 14px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .sd-comment-form { display: flex; gap: 8px; margin-bottom: 14px; }
+  .sd-comment-input {
+    flex: 1; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08);
+    border-radius: 12px; padding: 10px 14px;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; color: #fff; outline: none;
+    transition: border-color .2s, background .2s;
+  }
+  .sd-comment-input:focus { border-color: rgba(44,110,166,.5); background: rgba(255,255,255,.07); }
+  .sd-comment-input::placeholder { color: rgba(255,255,255,.2); }
+  .sd-comment-send {
+    width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0;
+    background: #2c6ea6; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; transition: background .2s;
+  }
+  .sd-comment-send:hover { background: #3a7dba; }
+  .sd-comment-send:disabled { opacity: .4; cursor: default; }
+  .sd-no-auth {
+    font-size: 12px; color: rgba(255,255,255,.3); text-align: center;
+    background: rgba(44,110,166,.08); border: 1px solid rgba(44,110,166,.15);
+    border-radius: 10px; padding: 10px; margin-bottom: 14px;
+  }
+  .sd-comment-item {
+    background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.05);
+    border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; position: relative;
+  }
+  .sd-comment-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+  .sd-comment-user { display: flex; align-items: center; gap: 7px; }
+  .sd-comment-av {
+    width: 22px; height: 22px; border-radius: 50%; background: #1a4f80;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 700; color: #7ec8f0; flex-shrink: 0;
+  }
+  .sd-comment-name { font-size: 11px; font-weight: 600; color: rgba(255,255,255,.7); }
+  .sd-comment-del {
+    background: none; border: none; cursor: pointer;
+    color: rgba(255,255,255,.15); padding: 2px; display: flex;
+    transition: color .2s;
+  }
+  .sd-comment-del:hover { color: #f87171; }
+  .sd-comment-text { font-size: 12px; color: rgba(255,255,255,.4); line-height: 1.5; padding-left: 29px; }
+  .sd-empty { font-size: 12px; color: rgba(255,255,255,.2); text-align: center; padding: 16px 0; }
+
+  /* ── SCHEDULES TAB ── */
+  .sd-add-sched {
+    background: rgba(44,110,166,.08); border: 1px solid rgba(44,110,166,.18);
+    border-radius: 14px; padding: 14px; margin-bottom: 14px;
+  }
+  .sd-add-sched-title {
+    font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    color: #7ec8f0; margin-bottom: 10px; display: flex; align-items: center; gap: 5px;
+  }
+  .sd-sched-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .sd-sched-input {
+    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08);
+    border-radius: 10px; padding: 9px 11px;
+    font-family: 'DM Sans', sans-serif; font-size: 12px; color: #fff; outline: none;
+    transition: border-color .2s;
+  }
+  .sd-sched-input:focus { border-color: rgba(44,110,166,.5); }
+  .sd-sched-select { flex-shrink: 0; }
+  .sd-sched-dest { flex: 1; }
+  .sd-sched-save {
+    background: #2c6ea6; border: none; border-radius: 10px;
+    padding: 9px 14px; font-family: 'DM Sans', sans-serif;
+    font-size: 12px; font-weight: 600; color: #fff; cursor: pointer;
+    transition: background .2s; flex-shrink: 0;
+  }
+  .sd-sched-save:hover { background: #3a7dba; }
+  .sd-sched-save:disabled { opacity: .4; cursor: default; }
+
+  /* Schedule item */
+  .sd-sched-item {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.05);
+    border-radius: 14px; padding: 13px 16px; margin-bottom: 8px;
+    transition: border-color .2s;
+  }
+  .sd-sched-item:hover { border-color: rgba(44,110,166,.25); }
+  .sd-sched-dest-name { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 3px; }
+  .sd-sched-type { font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.3); }
+  .sd-sched-right { display: flex; align-items: center; gap: 10px; }
+  .sd-sched-time { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: #fff; letter-spacing: -.02em; }
+  .sd-sched-status {
+    font-size: 9px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    color: #4ade80; background: rgba(74,222,128,.1); border: 1px solid rgba(74,222,128,.15);
+    padding: 3px 7px; border-radius: 100px; display: block; text-align: center; margin-top: 2px;
+  }
+  .sd-sched-del {
+    background: none; border: none; cursor: pointer;
+    color: rgba(255,255,255,.12); padding: 4px; display: flex;
+    transition: color .2s; opacity: 0;
+  }
+  .sd-sched-item:hover .sd-sched-del { opacity: 1; }
+  .sd-sched-del:hover { color: #f87171; }
+  .sd-no-schedules {
+    text-align: center; padding: 28px 0;
+    font-size: 12px; color: rgba(255,255,255,.2);
+    border: 1px dashed rgba(255,255,255,.06); border-radius: 14px;
+  }
+
+  /* ── OCCURRENCES TAB ── */
+  .sd-occ-report {
+    background: rgba(239,68,68,.05); border: 1px solid rgba(239,68,68,.12);
+    border-radius: 16px; padding: 16px; margin-bottom: 16px;
+  }
+  .sd-occ-report-title {
+    font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    color: #f87171; margin-bottom: 4px; display: flex; align-items: center; gap: 5px;
+  }
+  .sd-occ-hint { font-size: 11px; color: rgba(239,68,68,.5); margin-bottom: 12px; line-height: 1.5; }
+  .sd-occ-textarea {
+    width: 100%; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.07);
+    border-radius: 12px; padding: 11px 13px; resize: none;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; color: #fff; outline: none;
+    transition: border-color .2s; margin-bottom: 10px;
+  }
+  .sd-occ-textarea:focus { border-color: rgba(239,68,68,.4); }
+  .sd-occ-textarea::placeholder { color: rgba(255,255,255,.2); }
+  .sd-occ-submit {
+    width: 100%; display: flex; align-items: center; justify-content: center; gap: 7px;
+    padding: 12px; background: rgba(239,68,68,.7); border: none; border-radius: 12px;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+    color: #fff; cursor: pointer; transition: background .2s;
+  }
+  .sd-occ-submit:hover { background: rgba(239,68,68,.9); }
+  .sd-occ-submit:disabled { opacity: .4; cursor: default; }
+  .sd-occ-no-auth {
+    font-size: 12px; color: rgba(239,68,68,.5); text-align: center;
+    background: rgba(239,68,68,.06); border: 1px solid rgba(239,68,68,.1);
+    border-radius: 10px; padding: 10px;
+  }
+  .sd-occ-history-title {
+    font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    color: rgba(255,255,255,.25); margin-bottom: 10px; padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255,255,255,.05);
+  }
+  .sd-occ-item {
+    background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.05);
+    border-left: 3px solid rgba(239,68,68,.5);
+    border-radius: 0 12px 12px 0;
+    padding: 11px 13px; margin-bottom: 8px; position: relative;
+  }
+  .sd-occ-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+  .sd-occ-user { font-size: 11px; font-weight: 600; color: rgba(255,255,255,.6); }
+  .sd-occ-coords {
+    font-size: 9px; font-family: monospace; color: rgba(239,68,68,.5);
+    background: rgba(239,68,68,.06); padding: 2px 6px; border-radius: 5px;
+  }
+  .sd-occ-desc { font-size: 12px; color: rgba(255,255,255,.4); line-height: 1.5; }
+  .sd-occ-resolve {
+    position: absolute; top: -10px; right: -10px;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(74,222,128,.15); border: 1px solid rgba(74,222,128,.25);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; opacity: 0; transition: opacity .2s, background .2s; color: #4ade80;
+  }
+  .sd-occ-item:hover .sd-occ-resolve { opacity: 1; }
+  .sd-occ-resolve:hover { background: rgba(74,222,128,.3); }
+
+  /* ── TOAST ── */
+  .sd-toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    z-index: 9000; width: min(92vw, 420px);
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px; border-radius: 16px;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+    backdrop-filter: blur(16px); animation: sdToastIn .3s cubic-bezier(.22,1,.36,1);
+    box-shadow: 0 8px 32px rgba(0,0,0,.4);
+  }
+  @keyframes sdToastIn { from { opacity:0; transform:translateX(-50%) translateY(12px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+  .sd-toast-success { background: rgba(22,163,74,.92); color: #fff; }
+  .sd-toast-error   { background: rgba(220,38,38,.92); color: #fff; }
+  .sd-toast-info    { background: rgba(8,17,28,.95); border: 1px solid rgba(255,255,255,.08); color: #fff; }
+  .sd-toast-warning { background: rgba(245,158,11,.92); color: #08111c; }
+  .sd-toast-close { margin-left: auto; background: none; border: none; cursor: pointer; color: inherit; opacity: .7; display: flex; padding: 2px; }
+  .sd-toast-close:hover { opacity: 1; }
+
+  /* ── DIALOG ── */
+  .sd-dialog-bg {
+    position: fixed; inset: 0; z-index: 8000;
+    background: rgba(8,17,28,.75); backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+    animation: sdFadeIn .2s ease;
+  }
+  @keyframes sdFadeIn { from { opacity:0; } to { opacity:1; } }
+  .sd-dialog {
+    background: #0d1a26; border: 1px solid rgba(255,255,255,.08);
+    border-radius: 22px; padding: 24px; width: min(360px, 100%);
+    box-shadow: 0 24px 60px rgba(0,0,0,.6);
+    animation: sdSlideUp .3s cubic-bezier(.22,1,.36,1);
+  }
+  @keyframes sdSlideUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+  .sd-dialog-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; margin-bottom: 14px;
+  }
+  .sd-dialog-icon-danger  { background: rgba(239,68,68,.12); color: #f87171; }
+  .sd-dialog-icon-success { background: rgba(74,222,128,.1); color: #4ade80; }
+  .sd-dialog h3 { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+  .sd-dialog p { font-size: 13px; color: rgba(255,255,255,.4); line-height: 1.6; margin-bottom: 22px; }
+  .sd-dialog-btns { display: flex; gap: 8px; justify-content: flex-end; }
+  .sd-dialog-cancel {
+    padding: 10px 18px; border-radius: 10px; border: 1px solid rgba(255,255,255,.08);
+    background: rgba(255,255,255,.04); color: rgba(255,255,255,.6);
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: background .2s;
+  }
+  .sd-dialog-cancel:hover { background: rgba(255,255,255,.08); }
+  .sd-dialog-confirm-danger {
+    padding: 10px 18px; border-radius: 10px; border: none;
+    background: rgba(239,68,68,.7); color: #fff;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: background .2s;
+  }
+  .sd-dialog-confirm-danger:hover  { background: rgba(239,68,68,.9); }
+  .sd-dialog-confirm-success {
+    padding: 10px 18px; border-radius: 10px; border: none;
+    background: rgba(74,222,128,.2); color: #4ade80;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: background .2s;
+  }
+  .sd-dialog-confirm-success:hover { background: rgba(74,222,128,.35); }
+
+  /* ── NAVIGATION MODE ── */
+  .sd-nav-mode {
+    flex: 1; display: flex; flex-direction: column; overflow: hidden;
+  }
+  .sd-nav-map-wrap { position: relative; flex: 1; overflow: hidden; }
+  @media (min-width: 768px) {
+    .sd-nav-mode { flex-direction: row; }
+    .sd-nav-map-wrap { flex: 1; }
+  }
+  .sd-nav-turn {
+    position: absolute; top: 12px; left: 12px; right: 56px; z-index: 400;
+    background: rgba(8,17,28,.88); backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,.08); border-radius: 14px; padding: 13px 14px;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .sd-nav-turn-ico { color: #4ade80; flex-shrink: 0; margin-top: 2px; }
+  .sd-nav-turn-street { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+  .sd-nav-turn-dist { font-size: 12px; color: rgba(255,255,255,.35); }
+  .sd-nav-turn-dist span { color: #fff; font-weight: 600; }
+  .sd-nav-eta {
+    position: absolute; bottom: 16px; left: 12px; right: 12px; z-index: 400;
+    background: rgba(8,17,28,.88); backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,.08); border-radius: 16px; padding: 14px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .sd-nav-eta-time { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; color: #fff; letter-spacing: -.02em; }
+  .sd-nav-eta-unit { font-size: 12px; color: rgba(255,255,255,.3); margin-top: 2px; }
+  .sd-nav-eta-km { font-size: 12px; color: rgba(255,255,255,.3); }
+  .sd-nav-mode-btns { display: flex; gap: 6px; background: rgba(255,255,255,.06); padding: 4px; border-radius: 10px; }
+  .sd-nav-mode-btn {
+    width: 34px; height: 34px; border-radius: 8px; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent; color: rgba(255,255,255,.35); transition: all .2s;
+  }
+  .sd-nav-mode-btn.active-car  { background: rgba(44,110,166,.5); color: #7ec8f0; }
+  .sd-nav-mode-btn.active-walk { background: rgba(74,222,128,.2); color: #4ade80; }
+  .sd-nav-close {
+    position: absolute; top: 12px; right: 12px; z-index: 400;
+    width: 38px; height: 38px; border-radius: 50%;
+    background: rgba(239,68,68,.2); border: 1px solid rgba(239,68,68,.25);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: #f87171; transition: background .2s;
+  }
+  .sd-nav-close:hover { background: rgba(239,68,68,.4); }
+  .sd-nav-gps-loading {
+    flex: 1; background: #08111c;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+  }
+  .sd-nav-spin {
+    width: 44px; height: 44px;
+    border: 3px solid rgba(44,110,166,.2); border-top-color: #2c6ea6;
+    border-radius: 50%; animation: sdSpin .8s linear infinite;
+  }
+  @keyframes sdSpin { to { transform: rotate(360deg); } }
+  .sd-nav-spin-txt { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: rgba(255,255,255,.5); }
+  .sd-nav-cancel {
+    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08);
+    border-radius: 100px; padding: 8px 20px; color: rgba(255,255,255,.4);
+    font-family: 'DM Sans', sans-serif; font-size: 12px; cursor: pointer; transition: background .2s;
+  }
+  .sd-nav-cancel:hover { background: rgba(255,255,255,.1); }
+
+  /* gmaps panel during nav */
+  .sd-nav-panel-strip {
+    background: #0d1a26; border-top: 1px solid rgba(255,255,255,.05);
+    padding: 14px 18px;
+  }
+  .sd-nav-gmaps-btn {
+    width: 100%; display: flex; align-items: center; justify-content: center; gap: 7px;
+    padding: 11px; background: #2c6ea6; border: none; border-radius: 12px;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+    color: #fff; cursor: pointer; transition: background .2s;
+  }
+  .sd-nav-gmaps-btn:hover { background: #3a7dba; }
+`;
+
+/* ─── COMPONENT ───────────────────────────────────────────── */
 function StationDetails({ station, onBack }) {
   const navigate = useNavigate();
 
-  // --- ESTADOS GERAIS ---
-  const [activeTab, setActiveTab] = useState('info');
-  const [reviews, setReviews] = useState([]);
-  const [schedules, setSchedules] = useState([]);
-  const [occurrences, setOccurrences] = useState([]);
-
-  // --- ESTADOS DE MAPAS / GPS ---
+  const [activeTab,    setActiveTab]    = useState('info');
+  const [reviews,      setReviews]      = useState([]);
+  const [schedules,    setSchedules]    = useState([]);
+  const [occurrences,  setOccurrences]  = useState([]);
   const [isNavigating, setIsNavigating] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
-  const [routeInfo, setRouteInfo] = useState(null);
-  const [travelMode, setTravelMode] = useState('driving');
+  const [routeInfo,    setRouteInfo]    = useState(null);
+  const [travelMode,   setTravelMode]   = useState('driving');
+  const [isAlertActive,setIsAlertActive]= useState(false);
+  const [watchId,      setWatchId]      = useState(null);
+  const [newReview,    setNewReview]    = useState('');
+  const [newOccurrence,setNewOccurrence]= useState('');
+  const [newSchedule,  setNewSchedule]  = useState({ train_type: 'Urbano', destination: '', departure_time: '' });
+  const [submitting,   setSubmitting]   = useState(false);
+  const [toast,        setToast]        = useState(null);
+  const [dialog,       setDialog]       = useState({ isOpen:false, title:'', message:'', type:'danger', onConfirm:null });
 
-  const [isAlertActive, setIsAlertActive] = useState(false);
-  const [watchId, setWatchId] = useState(null);
-
-  // --- ESTADOS DE FORMULARIOS ---
-  const [newReview, setNewReview] = useState("");
-  const [newOccurrence, setNewOccurrence] = useState("");
-  const [newSchedule, setNewSchedule] = useState({ train_type: 'Urbano', destination: '', departure_time: '' });
-  const [submitting, setSubmitting] = useState(false);
-
-  // --- INTERFACE (TOASTS E DIALOGS) ---
-  const [toast, setToast] = useState(null);
-  const [dialog, setDialog] = useState({ isOpen: false, title: '', message: '', type: 'danger', onConfirm: null });
-  
   const [user] = useState(() => {
-    try {
-      const savedUser = localStorage.getItem('user');
-      return savedUser ? JSON.parse(savedUser) : null;
-    } catch { return null; }
+    try { const u = localStorage.getItem('user'); return u ? JSON.parse(u) : null; }
+    catch { return null; }
   });
 
   const showToast = (message, type = 'info') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 6000);
   };
+  const openDialog  = (title, message, type, onConfirm) => setDialog({ isOpen:true, title, message, type, onConfirm });
+  const closeDialog = () => setDialog(p => ({ ...p, isOpen:false }));
 
-  const openDialog = (title, message, type, onConfirm) => {
-    setDialog({ isOpen: true, title, message, type, onConfirm });
-  };
-
-  const closeDialog = () => {
-    setDialog(prev => ({ ...prev, isOpen: false }));
-  };
-
-  // --- VARIAVEL DE CONTROLO PARA O ESLINT ---
   const stationId = station?.id;
 
-  // --- FUNCOES DE CARREGAMENTO ---
   const fetchOccurrences = useCallback(async () => {
     if (!stationId) return;
-    try {
-      const res = await fetch(`http://localhost:5000/api/occurrences/${stationId}`);
-      const data = await res.json();
-      setOccurrences(Array.isArray(data) ? data : []);
-    } catch {
-      console.error("Erro ao carregar ocorrências.");
-    }
+    try { const r = await fetch(`http://localhost:5000/api/occurrences/${stationId}`); const d = await r.json(); setOccurrences(Array.isArray(d) ? d : []); }
+    catch { console.error('Erro ocorrências'); }
   }, [stationId]);
 
   const fetchSchedules = useCallback(async () => {
     if (!stationId) return;
-    try {
-      const res = await fetch(`http://localhost:5000/api/schedules/${stationId}`);
-      const data = await res.json();
-      setSchedules(Array.isArray(data) ? data : []);
-    } catch {
-      console.error("Erro ao carregar horários.");
-    }
+    try { const r = await fetch(`http://localhost:5000/api/schedules/${stationId}`); const d = await r.json(); setSchedules(Array.isArray(d) ? d : []); }
+    catch { console.error('Erro horários'); }
   }, [stationId]);
 
-  // Carregamento inicial da Estacao
   useEffect(() => {
     if (stationId) {
-      fetch(`http://localhost:5000/api/reviews/${stationId}`)
-        .then(res => res.json())
-        .then(data => setReviews(Array.isArray(data) ? data : []))
-        .catch(() => console.error("Erro ao carregar avaliações."));
-
-      fetchSchedules();
-      fetchOccurrences();
+      fetch(`http://localhost:5000/api/reviews/${stationId}`).then(r=>r.json()).then(d=>setReviews(Array.isArray(d)?d:[])).catch(()=>{});
+      fetchSchedules(); fetchOccurrences();
     }
   }, [stationId, fetchSchedules, fetchOccurrences]);
 
-  // Limpeza do GPS
-  useEffect(() => {
-    return () => {
-      if (watchId !== null) navigator.geolocation.clearWatch(watchId);
-    };
-  }, [watchId]);
+  useEffect(() => { return () => { if (watchId !== null) navigator.geolocation.clearWatch(watchId); }; }, [watchId]);
 
-  // --- FUNCOES DE REVIEWS ---
-  const handleSubmitReview = async (e) => {
-    e.preventDefault();
-    if (!newReview.trim()) return;
-    setSubmitting(true);
-    const token = localStorage.getItem('token');
+  /* ── Reviews ── */
+  const handleSubmitReview = async e => {
+    e.preventDefault(); if (!newReview.trim()) return;
+    setSubmitting(true); const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:5000/api/reviews/${stationId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-auth-token': token },
-        body: JSON.stringify({ content: newReview })
-      });
-      if (res.ok) {
-        const savedReview = await res.json();
-        setReviews([savedReview, ...reviews]);
-        setNewReview("");
-        showToast("Comentário adicionado!", "success");
-      } else {
-        const errorData = await res.json().catch(() => ({}));
-        showToast(errorData.error || "Erro ao adicionar comentário.", "error");
-      }
-    } catch {
-      showToast("Erro de ligação.", "error");
-    } finally {
-      setSubmitting(false);
-    }
+      const r = await fetch(`http://localhost:5000/api/reviews/${stationId}`, { method:'POST', headers:{'Content-Type':'application/json','x-auth-token':token}, body:JSON.stringify({content:newReview}) });
+      if (r.ok) { const s = await r.json(); setReviews([s,...reviews]); setNewReview(''); showToast('Comentário adicionado!','success'); }
+      else { const err = await r.json().catch(()=>({})); showToast(err.error||'Erro.','error'); }
+    } catch { showToast('Erro de ligação.','error'); } finally { setSubmitting(false); }
   };
 
-  const handleDeleteReview = (reviewId) => {
-    openDialog("Apagar Comentário", "Tens a certeza que queres eliminar este comentário? Esta ação é irreversível.", "danger", async () => {
-      const token = localStorage.getItem('token');
-      try {
-        const res = await fetch(`http://localhost:5000/api/reviews/${reviewId}`, {
-          method: 'DELETE',
-          headers: { 'x-auth-token': token }
-        });
-        if (res.ok) {
-          setReviews(reviews.filter(r => r.id !== reviewId));
-          showToast("Comentário apagado.", "info");
-        } else {
-          showToast("Erro ao apagar.", "error");
-        }
-      } catch {
-        showToast("Erro no servidor.", "error");
-      }
-    });
-  };
-
-  // --- FUNCOES DA ESTACAO ---
-  const handleDeleteStation = () => {
-    openDialog("Eliminar Estação", `Tens a certeza absoluta que pretendes eliminar a ${station.name}? Todos os dados, horários e ocorrências serão apagados.`, "danger", async () => {
-      const token = localStorage.getItem('token');
-      try {
-        const res = await fetch(`http://localhost:5000/api/stations/${stationId}`, {
-          method: 'DELETE',
-          headers: { 'x-auth-token': token }
-        });
-        if (res.ok) {
-          showToast('Estação eliminada com sucesso!', 'success');
-          setTimeout(() => {
-            onBack();
-            window.location.reload();
-          }, 1500);
-        } else {
-          showToast('Erro ao apagar estação.', 'error');
-        }
-      } catch {
-        showToast('Erro no servidor.', 'error');
-      }
-    });
-  };
-
-  // --- FUNCOES DE OCORRENCIAS ---
-  const handleReportOccurrence = async (e) => {
-    e.preventDefault();
-    if (!newOccurrence.trim()) return showToast("A descrição não pode estar vazia.", "warning");
-    if (!("geolocation" in navigator)) return showToast("O teu browser não suporta GPS.", "error");
-
-    setSubmitting(true);
-    showToast("A capturar a tua localização GPS exata...", "info");
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        const token = localStorage.getItem('token');
-        try {
-          const res = await fetch(`http://localhost:5000/api/occurrences/${stationId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'x-auth-token': token },
-            body: JSON.stringify({ description: newOccurrence, latitude, longitude })
-          });
-          if (res.ok) {
-            showToast("Ocorrência enviada com sucesso!", "success");
-            setNewOccurrence("");
-            fetchOccurrences();
-          } else {
-            const errorData = await res.json().catch(() => ({}));
-            showToast(errorData.error || "Erro ao reportar ocorrência.", "error");
-          }
-        } catch {
-          showToast("Erro de conexão.", "error");
-        } finally {
-          setSubmitting(false);
-        }
-      },
-      () => {
-        showToast("Erro ao ler GPS. Verifica permissões.", "error");
-        setSubmitting(false);
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
-  };
-
-  const handleDeleteOccurrence = (occId) => {
-    openDialog("Resolver Ocorrência", "Queres marcar esta ocorrência como resolvida? Ela será removida da lista pública.", "success", async () => {
-      const token = localStorage.getItem('token');
-      try {
-        const res = await fetch(`http://localhost:5000/api/occurrences/${occId}`, {
-          method: 'DELETE',
-          headers: { 'x-auth-token': token }
-        });
-        if (res.ok) {
-          setOccurrences(occurrences.filter(o => o.id !== occId));
-          showToast("Ocorrência marcada como resolvida.", "success");
-        } else {
-          showToast("Erro ao resolver ocorrência.", "error");
-        }
-      } catch {
-        showToast("Erro no servidor.", "error");
-      }
-    });
-  };
-
-  // --- FUNCOES DE HORARIOS ---
-  const handleAddSchedule = async (e) => {
-    e.preventDefault();
-    if (!newSchedule.destination || !newSchedule.departure_time) {
-      return showToast("Preenche todos os campos.", "warning");
-    }
-
-    setSubmitting(true);
+  const handleDeleteReview = id => openDialog('Apagar Comentário','Tens a certeza que queres eliminar este comentário?','danger', async () => {
     const token = localStorage.getItem('token');
-    try {
-      const res = await fetch(`http://localhost:5000/api/schedules/${stationId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-auth-token': token },
-        body: JSON.stringify({
-          departureTime: newSchedule.departure_time,
-          destination: newSchedule.destination,
-          trainType: newSchedule.train_type
-        })
-      });
-      
-      if (res.ok) {
-        showToast("Horário adicionado!", "success");
-        setNewSchedule({ train_type: 'Urbano', destination: '', departure_time: '' });
-        fetchSchedules();
-      } else {
-        const errorData = await res.json().catch(() => ({}));
-        showToast(errorData.error || "Erro ao adicionar horário.", "error");
-      }
-    } catch {
-      showToast("Erro de conexão.", "error");
-    } finally {
-      setSubmitting(false);
-    }
-  };
+    const r = await fetch(`http://localhost:5000/api/reviews/${id}`,{method:'DELETE',headers:{'x-auth-token':token}});
+    if (r.ok) { setReviews(reviews.filter(x=>x.id!==id)); showToast('Comentário apagado.','info'); } else showToast('Erro.','error');
+  });
 
-  const handleDeleteSchedule = (id) => {
-    openDialog("Apagar Horário", "Tens a certeza que pretendes apagar este horário da tabela?", "danger", async () => {
+  /* ── Station ── */
+  const handleDeleteStation = () => openDialog('Eliminar Estação',`Tens a certeza absoluta que pretendes eliminar a ${station.name}? Todos os dados serão apagados.`,'danger', async () => {
+    const token = localStorage.getItem('token');
+    const r = await fetch(`http://localhost:5000/api/stations/${stationId}`,{method:'DELETE',headers:{'x-auth-token':token}});
+    if (r.ok) { showToast('Estação eliminada!','success'); setTimeout(()=>{ onBack(); window.location.reload(); },1500); } else showToast('Erro.','error');
+  });
+
+  /* ── Occurrences ── */
+  const handleReportOccurrence = async e => {
+    e.preventDefault(); if (!newOccurrence.trim()) return showToast('A descrição não pode estar vazia.','warning');
+    if (!('geolocation' in navigator)) return showToast('Browser sem suporte a GPS.','error');
+    setSubmitting(true); showToast('A capturar localização GPS…','info');
+    navigator.geolocation.getCurrentPosition(async pos => {
       const token = localStorage.getItem('token');
       try {
-        const res = await fetch(`http://localhost:5000/api/schedules/${id}`, {
-          method: 'DELETE',
-          headers: { 'x-auth-token': token }
-        });
-        if (res.ok) {
-          setSchedules(schedules.filter(s => s.id !== id));
-          showToast("Horário apagado.", "info");
-        } else {
-          showToast("Erro ao apagar horário.", "error");
-        }
-      } catch {
-        showToast("Erro no servidor.", "error");
-      }
-    });
+        const r = await fetch(`http://localhost:5000/api/occurrences/${stationId}`,{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':token},body:JSON.stringify({description:newOccurrence,latitude:pos.coords.latitude,longitude:pos.coords.longitude})});
+        if (r.ok) { showToast('Ocorrência enviada!','success'); setNewOccurrence(''); fetchOccurrences(); }
+        else { const err = await r.json().catch(()=>({})); showToast(err.error||'Erro.','error'); }
+      } catch { showToast('Erro de conexão.','error'); } finally { setSubmitting(false); }
+    }, () => { showToast('Erro ao ler GPS.','error'); setSubmitting(false); }, { enableHighAccuracy:true, timeout:10000, maximumAge:0 });
   };
 
-  // --- LOGICA DE MAPAS ---
+  const handleDeleteOccurrence = id => openDialog('Resolver Ocorrência','Marcar como resolvida?','success', async () => {
+    const token = localStorage.getItem('token');
+    const r = await fetch(`http://localhost:5000/api/occurrences/${id}`,{method:'DELETE',headers:{'x-auth-token':token}});
+    if (r.ok) { setOccurrences(occurrences.filter(o=>o.id!==id)); showToast('Ocorrência resolvida.','success'); } else showToast('Erro.','error');
+  });
+
+  /* ── Schedules ── */
+  const handleAddSchedule = async e => {
+    e.preventDefault(); if (!newSchedule.destination||!newSchedule.departure_time) return showToast('Preenche todos os campos.','warning');
+    setSubmitting(true); const token = localStorage.getItem('token');
+    try {
+      const r = await fetch(`http://localhost:5000/api/schedules/${stationId}`,{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':token},body:JSON.stringify({departureTime:newSchedule.departure_time,destination:newSchedule.destination,trainType:newSchedule.train_type})});
+      if (r.ok) { showToast('Horário adicionado!','success'); setNewSchedule({train_type:'Urbano',destination:'',departure_time:''}); fetchSchedules(); }
+      else { const err = await r.json().catch(()=>({})); showToast(err.error||'Erro.','error'); }
+    } catch { showToast('Erro de conexão.','error'); } finally { setSubmitting(false); }
+  };
+
+  const handleDeleteSchedule = id => openDialog('Apagar Horário','Tens a certeza que pretendes apagar este horário?','danger', async () => {
+    const token = localStorage.getItem('token');
+    const r = await fetch(`http://localhost:5000/api/schedules/${id}`,{method:'DELETE',headers:{'x-auth-token':token}});
+    if (r.ok) { setSchedules(schedules.filter(s=>s.id!==id)); showToast('Horário apagado.','info'); } else showToast('Erro.','error');
+  });
+
+  /* ── GPS / Navigation ── */
   const toggleAlert = () => {
     if (isAlertActive) {
-      if (watchId !== null) navigator.geolocation.clearWatch(watchId);
-      setIsAlertActive(false);
-      setWatchId(null);
-      showToast("Radar desativado.", "info");
+      if (watchId!==null) navigator.geolocation.clearWatch(watchId);
+      setIsAlertActive(false); setWatchId(null); showToast('Radar desativado.','info');
     } else {
-      if (!station.latitude || !station.longitude) return showToast("Sem coordenadas da estação.", "error");
-      if (!("geolocation" in navigator)) return showToast("Browser sem suporte a GPS.", "error");
-
-      showToast("📡 Radar ativado! Receberás um aviso a menos de 500m.", "success");
-      setIsAlertActive(true);
-
-      const id = navigator.geolocation.watchPosition(
-        (position) => {
-          const distance = calculateDistance(
-            position.coords.latitude,
-            position.coords.longitude,
-            station.latitude,
-            station.longitude
-          );
-          if (distance <= 0.5) {
-            showToast(`📍 GEOFENCE ATINGIDO: Chegaste à zona da ${station.name}!`, "success");
-            navigator.geolocation.clearWatch(id);
-            setIsAlertActive(false);
-            setWatchId(null);
-          }
-        },
-        () => {
-          showToast("Sinal GPS perdido.", "error");
-          setIsAlertActive(false);
-          navigator.geolocation.clearWatch(id);
-          setWatchId(null);
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-      );
+      if (!station.latitude||!station.longitude) return showToast('Sem coordenadas.','error');
+      if (!('geolocation' in navigator)) return showToast('Browser sem suporte a GPS.','error');
+      showToast('Radar ativado! Aviso a menos de 500m.','success'); setIsAlertActive(true);
+      const id = navigator.geolocation.watchPosition(pos => {
+        if (calculateDistance(pos.coords.latitude,pos.coords.longitude,station.latitude,station.longitude)<=0.5) {
+          showToast(`Chegaste à zona da ${station.name}!`,'success');
+          navigator.geolocation.clearWatch(id); setIsAlertActive(false); setWatchId(null);
+        }
+      }, () => { showToast('GPS perdido.','error'); setIsAlertActive(false); navigator.geolocation.clearWatch(id); setWatchId(null); }, {enableHighAccuracy:true,timeout:10000,maximumAge:0});
       setWatchId(id);
     }
   };
 
   const startNavigation = () => {
-    if (!station.latitude || !station.longitude) return showToast("Sem coordenadas.", "error");
-    if ("geolocation" in navigator) {
+    if (!station.latitude||!station.longitude) return showToast('Sem coordenadas.','error');
+    if ('geolocation' in navigator) {
       setIsNavigating(true);
-      navigator.geolocation.getCurrentPosition(
-        (pos) => setUserLocation({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
-        () => {
-          setIsNavigating(false);
-          showToast("Erro a ler GPS. Verifica as permissões.", "error");
-        },
-        { enableHighAccuracy: false, timeout: 10000, maximumAge: 0 }
-      );
-    } else {
-      showToast("Sem suporte para GPS no teu navegador.", "error");
-    }
+      navigator.geolocation.getCurrentPosition(pos=>setUserLocation({latitude:pos.coords.latitude,longitude:pos.coords.longitude}),()=>{setIsNavigating(false);showToast('Erro GPS.','error');},{enableHighAccuracy:false,timeout:10000,maximumAge:0});
+    } else showToast('Sem suporte GPS.','error');
   };
-
-  const stopNavigation = () => {
-    setIsNavigating(false);
-    setUserLocation(null);
-    setRouteInfo(null);
-  };
+  const stopNavigation = () => { setIsNavigating(false); setUserLocation(null); setRouteInfo(null); };
 
   if (!station) return null;
 
-  return (
-    <div className="h-full bg-gray-50 flex flex-col animate-fade-in overflow-hidden relative">
-      
-      {/* CUSTOM CONFIRM DIALOG */}
-      {dialog.isOpen && (
-        <div className="fixed inset-0 z-[6000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-3xl shadow-2xl p-6 w-full max-w-sm animate-slide-up border border-gray-100">
-            <div className="flex items-center gap-3 mb-4">
-              <div className={`p-3 rounded-full ${dialog.type === 'danger' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
-                {dialog.type === 'danger' ? <TriangleAlert size={24} /> : <CircleCheck size={24} />}
-              </div>
-              <h3 className="text-xl font-bold text-slate-900">{dialog.title}</h3>
-            </div>
-            <p className="text-gray-600 mb-8 leading-relaxed text-sm">{dialog.message}</p>
-            <div className="flex justify-end gap-3">
-              <button onClick={closeDialog} className="px-5 py-2.5 rounded-xl font-bold text-slate-600 bg-gray-100 hover:bg-gray-200 transition-colors text-sm">
-                Cancelar
-              </button>
-              <button
-                onClick={() => { dialog.onConfirm(); closeDialog(); }}
-                className={`px-5 py-2.5 rounded-xl font-bold text-white transition-transform active:scale-95 text-sm shadow-md ${
-                  dialog.type === 'danger' ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'
-                }`}
-              >
-                Confirmar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+  /* ─── NAVIGATION MODE ─── */
+  if (isNavigating) {
+    return (
+      <>
+        <style>{CSS}</style>
+        <div className="sd-root">
+          {/* Dialog / Toast in nav mode */}
+          {dialog.isOpen && <DialogBox dialog={dialog} closeDialog={closeDialog} />}
+          {toast && <ToastBox toast={toast} setToast={setToast} />}
 
-      {/* NOTIFICACOES (TOASTS) */}
-      {toast && (
-        <div className={`fixed bottom-10 left-1/2 transform -translate-x-1/2 z-[5000] w-11/12 max-w-md flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl transition-all animate-fade-in font-medium backdrop-blur-md bg-opacity-95
-          ${toast.type === 'success' ? 'bg-green-600 text-white' : ''} 
-          ${toast.type === 'error' ? 'bg-red-600 text-white' : ''}
-          ${toast.type === 'info' ? 'bg-slate-900 text-white' : ''} 
-          ${toast.type === 'warning' ? 'bg-yellow-500 text-slate-900' : ''}
-        `}>
-          <div className="shrink-0">
-            {toast.type === 'success' && <CircleCheck size={24} />}
-            {toast.type === 'error' && <CircleX size={24} />}
-            {toast.type === 'info' && <Info size={24} />}
-            {toast.type === 'warning' && <TriangleAlert size={24} />}
-          </div>
-          <span className="flex-1 text-sm">{toast.message}</span>
-          <button onClick={() => setToast(null)} className="shrink-0 p-1 hover:bg-white/20 rounded-full transition-colors">
-            <X size={18} />
-          </button>
-        </div>
-      )}
+          <div className="sd-nav-mode">
+            {userLocation ? (
+              <div className="sd-nav-map-wrap">
+                <RouteMap userLocation={userLocation} stationLocation={station} travelMode={travelMode} onRouteInfo={setRouteInfo} />
 
-      {/* BOTAO VOLTAR */}
-      {!isNavigating && (
-        <div className="absolute top-4 left-4 z-50">
-           <button onClick={onBack} className="bg-white/90 p-3 rounded-full shadow-lg hover:bg-white text-slate-900 transition-transform hover:scale-110">
-            <ArrowLeft size={24} />
-          </button>
-        </div>
-      )}
-
-      <div className="flex-1 flex flex-col md:flex-row h-full overflow-hidden">
-        
-        {/* LADO ESQUERDO: MAPA OU IMAGEM */}
-        <div className={`relative shrink-0 transition-all duration-500 bg-gray-200 ${isNavigating ? 'h-[75vh] md:h-full md:w-1/2' : 'h-64 md:h-full md:w-1/2'}`}>
-          {isNavigating ? (
-            userLocation ? (
-              <div className="w-full h-full relative animate-fade-in">
-                  <RouteMap userLocation={userLocation} stationLocation={station} travelMode={travelMode} onRouteInfo={setRouteInfo} />
-                  
-                  {routeInfo && routeInfo.nextTurn && (
-                     <div className="absolute top-4 left-4 right-16 md:right-auto md:w-80 z-[400] bg-slate-900/90 text-white backdrop-blur-md p-4 rounded-xl shadow-2xl border border-white/10">
-                        <div className="flex items-start gap-3">
-                           <div className="mt-1 text-green-400"><CornerUpRight size={32} /></div>
-                           <div>
-                              <p className="text-lg font-bold leading-tight">{routeInfo.nextTurn}</p>
-                              {routeInfo.turnDist > 0 && <p className="text-sm text-gray-400 mt-1">em <span className="text-white font-bold">{routeInfo.turnDist} metros</span></p>}
-                           </div>
-                        </div>
-                     </div>
-                  )}
-
-                  <div className="absolute bottom-6 left-4 right-4 z-[400] flex flex-col gap-3 md:left-4 md:right-auto md:w-64">
-                      <div className="bg-white p-4 rounded-2xl shadow-xl flex items-center justify-between">
-                           <div>
-                              <p className="text-xs text-gray-500 font-bold uppercase">Destino</p>
-                              <div className="flex items-baseline gap-1">
-                                <span className="text-2xl font-bold text-slate-900">{routeInfo?.time || "--"}</span>
-                                <span className="text-sm font-bold text-gray-500">min</span>
-                              </div>
-                              <p className="text-xs text-gray-400">{routeInfo?.distance || "--"} km</p>
-                           </div>
-                           <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
-                               <button onClick={() => setTravelMode('driving')} className={`p-2 rounded-md ${travelMode === 'driving' ? 'bg-white shadow text-blue-600' : 'text-gray-400'}`}><Car size={20}/></button>
-                               <button onClick={() => setTravelMode('walking')} className={`p-2 rounded-md ${travelMode === 'walking' ? 'bg-white shadow text-green-600' : 'text-gray-400'}`}><Footprints size={20}/></button>
-                           </div>
-                      </div>
+                {routeInfo?.nextTurn && (
+                  <div className="sd-nav-turn">
+                    <div className="sd-nav-turn-ico"><CornerUpRight size={24} /></div>
+                    <div>
+                      <div className="sd-nav-turn-street">{routeInfo.nextTurn}</div>
+                      {routeInfo.turnDist > 0 && <div className="sd-nav-turn-dist">em <span>{routeInfo.turnDist} metros</span></div>}
+                    </div>
                   </div>
-                  <button onClick={stopNavigation} className="absolute top-4 right-4 z-[400] bg-white p-3 rounded-full shadow-xl text-red-500 hover:bg-red-50">
-                    <CircleX size={24} />
-                  </button>
+                )}
+
+                <div className="sd-nav-eta">
+                  <div>
+                    <div className="sd-nav-eta-time">{routeInfo?.time || '--'}</div>
+                    <div className="sd-nav-eta-unit">minutos</div>
+                    <div className="sd-nav-eta-km">{routeInfo?.distance || '--'} km</div>
+                  </div>
+                  <div className="sd-nav-mode-btns">
+                    <button className={`sd-nav-mode-btn ${travelMode==='driving'?'active-car':''}`} onClick={()=>setTravelMode('driving')}><Car size={17}/></button>
+                    <button className={`sd-nav-mode-btn ${travelMode==='walking'?'active-walk':''}`} onClick={()=>setTravelMode('walking')}><Footprints size={17}/></button>
+                  </div>
+                </div>
+
+                <button className="sd-nav-close" onClick={stopNavigation}><CircleX size={20}/></button>
               </div>
             ) : (
-              <div className="w-full h-full bg-slate-900 flex flex-col items-center justify-center text-white p-6 text-center animate-fade-in z-50">
-                  <div className="animate-spin mb-6 text-blue-500"><Navigation size={64} /></div>
-                  <h3 className="text-2xl font-bold mb-2">A procurar sinal GPS...</h3>
-                  <button onClick={stopNavigation} className="bg-white/10 hover:bg-white/20 px-6 py-2 rounded-full text-sm font-medium transition-colors border border-white/10 mt-4">Cancelar</button>
+              <div className="sd-nav-gps-loading">
+                <div className="sd-nav-spin" />
+                <div className="sd-nav-spin-txt">A procurar sinal GPS…</div>
+                <button className="sd-nav-cancel" onClick={stopNavigation}>Cancelar</button>
               </div>
-            )
-          ) : (
-            <>
-              <img src={station.image_url} alt={station.name} className="w-full h-full object-cover" />
-              {user && user.is_admin && (
-                  <div className="absolute top-4 right-4 z-[400] flex gap-2">
-                    <button onClick={() => navigate(`/admin/edit/${stationId}`)} className="bg-blue-600 p-3 rounded-full shadow-xl text-white hover:bg-blue-700 transition-transform hover:scale-110" title="Editar">
-                      <Edit size={24} />
-                    </button>
-                    <button onClick={handleDeleteStation} className="bg-red-600 p-3 rounded-full shadow-xl text-white hover:bg-red-700 transition-transform hover:scale-110" title="Eliminar">
-                      <Trash2 size={24} />
-                    </button>
-                  </div>
-              )}
-            </>
-          )}
+            )}
+
+            {userLocation && (
+              <div className="sd-nav-panel-strip">
+                <button className="sd-nav-gmaps-btn" onClick={()=>window.open(`https://www.google.com/maps/dir/?api=1&destination=${station.latitude},${station.longitude}`,'_blank')}>
+                  <ExternalLink size={15}/> Abrir no Google Maps
+                </button>
+              </div>
+            )}
+          </div>
         </div>
+      </>
+    );
+  }
 
-        {/* LADO DIREITO: INFORMACAO E ABAS */}
-        <div className="flex-1 bg-white md:w-1/2 flex flex-col relative z-10 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] md:shadow-none overflow-hidden">
-            <div className="flex-1 overflow-y-auto p-8">
-                
-                <h2 className="text-3xl font-bold text-slate-900 mb-2">{station.name}</h2>
-                <div className="flex items-center text-gray-500 text-sm mb-6 font-medium">
-                  <MapPin size={18} className="mr-2 text-blue-600" />
-                  <span>Portugal</span>
-                </div>
+  /* ─── NORMAL MODE ─── */
+  return (
+    <>
+      <style>{CSS}</style>
+      <div className="sd-root">
+        <div className="sd-bg" />
 
-                {/* BOTOES DE NAVEGACAO SUPERIORES */}
-                {isNavigating ? (
-                    <div className="mb-8 p-4 bg-blue-50 rounded-xl border border-blue-100 animate-fade-in">
-                        <p className="text-sm text-blue-800 mb-3 font-medium">Preferes a app oficial?</p>
-                        <button 
-                            onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=$$${station.latitude},${station.longitude}`, '_blank')}
-                            className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 shadow-sm hover:bg-blue-700 transition-colors"
-                        >
-                            <ExternalLink size={18} /> Abrir Google Maps
-                        </button>
+        {dialog.isOpen && <DialogBox dialog={dialog} closeDialog={closeDialog} />}
+        {toast && <ToastBox toast={toast} setToast={setToast} />}
+
+        <div className="sd-layout">
+
+          {/* HERO IMAGE */}
+          <div className="sd-hero">
+            <img src={station.image_url} alt={station.name} />
+            <div className="sd-hero-overlay" />
+
+            {/* Station name on hero — mobile only */}
+            <div className="sd-hero-name">
+              <h2>{station.name}</h2>
+              <div className="sd-loc"><MapPin size={10} /><span>Portugal</span></div>
+            </div>
+
+            {/* Back */}
+            <button className="sd-back" onClick={onBack}><ArrowLeft size={18}/></button>
+
+            {/* Admin */}
+            {user?.is_admin && (
+              <div className="sd-admin-btns">
+                <button className="sd-admin-btn sd-admin-btn-edit" onClick={()=>navigate(`/admin/edit/${stationId}`)} title="Editar"><Edit size={16} color="#fff"/></button>
+                <button className="sd-admin-btn sd-admin-btn-del" onClick={handleDeleteStation} title="Eliminar"><Trash2 size={16} color="#fff"/></button>
+              </div>
+            )}
+          </div>
+
+          {/* PANEL */}
+          <div className="sd-panel">
+            <div className="sd-panel-scroll">
+
+              {/* Desktop heading */}
+              <div className="sd-desktop-heading">
+                <h2>{station.name}</h2>
+                <div className="sd-loc"><MapPin size={10}/><span>Portugal</span></div>
+              </div>
+
+              {/* Action buttons */}
+              <div className="sd-actions">
+                <button className="sd-btn-nav" onClick={startNavigation}><Navigation size={16}/> Navegar</button>
+                <button className={`sd-btn-alert ${isAlertActive?'active':''}`} onClick={toggleAlert}>
+                  <Bell size={16}/> {isAlertActive ? 'A Rastrear…' : 'Alerta GPS'}
+                </button>
+              </div>
+
+              {/* Tabs */}
+              <div className="sd-tabs">
+                <button className={`sd-tab ${activeTab==='info'?'active':''}`} onClick={()=>setActiveTab('info')}>Info</button>
+                <button className={`sd-tab ${activeTab==='schedules'?'active':''}`} onClick={()=>setActiveTab('schedules')}>Horários</button>
+                <button className={`sd-tab ${activeTab==='occurrences'?'active-red':''}`} onClick={()=>setActiveTab('occurrences')}>
+                  <TriangleAlert size={12}/> Ocorrências {occurrences.length > 0 && <span style={{background:'rgba(248,113,113,.2)',color:'#f87171',padding:'0 5px',borderRadius:'100px',fontSize:'9px',fontWeight:700}}>{occurrences.length}</span>}
+                </button>
+              </div>
+
+              {/* ── INFO ── */}
+              {activeTab === 'info' && (
+                <div>
+                  <p className="sd-desc">{station.description}</p>
+                  <div className="sd-comments-box">
+                    <div className="sd-comments-title">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                      Comentários <span style={{color:'rgba(255,255,255,.15)'}}>({reviews.length})</span>
                     </div>
-                ) : (
-                    <div className="grid grid-cols-2 gap-4 mb-8">
-                        <button onClick={startNavigation} className="bg-slate-900 text-white py-4 px-6 rounded-2xl font-bold flex items-center justify-center gap-3 shadow-lg active:scale-95 transition-transform hover:bg-slate-800">
-                            <Navigation size={20} /> Navegar
-                        </button>
-                        <button onClick={toggleAlert} className={`py-4 px-6 rounded-2xl font-bold flex items-center justify-center gap-3 transition-colors border-2 shadow-sm ${isAlertActive ? 'bg-yellow-50 border-yellow-400 text-yellow-700 animate-pulse' : 'bg-white border-slate-100 text-slate-600 hover:bg-slate-50'}`}>
-                            <Bell size={20} className={isAlertActive ? 'text-yellow-600' : ''} /> {isAlertActive ? 'A Rastrear...' : 'Alerta'}
-                        </button>
-                    </div>
-                )}
-
-                {/* BARRA DE ABAS */}
-                <div className="flex border-b border-gray-100 mb-6 relative overflow-x-auto no-scrollbar">
-                    <button onClick={() => setActiveTab('info')} className={`pb-3 px-4 font-bold text-sm transition-colors whitespace-nowrap ${activeTab === 'info' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-400 hover:text-slate-600'}`}>INFO</button>
-                    <button onClick={() => setActiveTab('schedules')} className={`pb-3 px-4 font-bold text-sm transition-colors whitespace-nowrap ${activeTab === 'schedules' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-400 hover:text-slate-600'}`}>HORÁRIOS</button>
-                    <button onClick={() => setActiveTab('occurrences')} className={`pb-3 px-4 font-bold text-sm transition-colors whitespace-nowrap flex items-center gap-1 ${activeTab === 'occurrences' ? 'text-red-600 border-b-2 border-red-600' : 'text-gray-400 hover:text-slate-600'}`}>
-                      <TriangleAlert size={16}/> OCORRÊNCIAS
-                    </button>
-                </div>
-
-                {/* ABA: INFO E COMENTARIOS */}
-                {activeTab === 'info' && (
-                    <div className="animate-fade-in">
-                        <p className="text-gray-600 mb-8 leading-relaxed">{station.description}</p>
-                        <div className="bg-gray-50 rounded-2xl p-6">
-                            <h3 className="font-bold mb-4 flex items-center gap-2">💬 Comentários <span className="text-gray-400 text-sm font-normal">({reviews.length})</span></h3>
-                             {user ? (
-                                <form onSubmit={handleSubmitReview} className="flex gap-2 mb-4">
-                                    <input value={newReview} onChange={(e) => setNewReview(e.target.value)} className="flex-1 p-3 rounded-xl border-none ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-shadow" placeholder="Escreve algo..." />
-                                    <button type="submit" disabled={submitting} className="bg-blue-600 text-white p-3 rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors">
-                                      <Send size={18}/>
-                                    </button>
-                                </form>
-                            ) : (
-                                <p className="text-sm text-gray-500 mb-4 bg-blue-50 p-3 rounded-lg text-center border border-blue-100">Faz login para participar na conversa.</p>
-                            )}
-                            
-                            <div className="space-y-3">
-                                {reviews.length === 0 && <p className="text-center text-gray-400 py-4 text-sm">Sê o primeiro a comentar!</p>}
-                                {reviews.map(r => (
-                                    <div key={r.id} className="bg-white p-3 rounded-xl shadow-sm border border-gray-100 group relative">
-                                        <div className="flex items-center justify-between mb-1">
-                                            <div className="flex items-center gap-2">
-                                              <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-[10px] text-white font-bold">
-                                                {r.user_name ? r.user_name[0].toUpperCase() : 'U'}
-                                              </div>
-                                              <span className="font-bold text-xs text-slate-800">{r.user_name}</span>
-                                            </div>
-                                            {user && user.is_admin && (
-                                              <button onClick={() => handleDeleteReview(r.id)} className="text-gray-300 hover:text-red-500 transition-colors p-1">
-                                                <Trash2 size={16} />
-                                              </button>
-                                            )}
-                                        </div>
-                                        <p className="text-sm text-gray-600 pl-8">{r.content}</p>
-                                    </div>
-                                ))}
-                            </div>
+                    {user ? (
+                      <form onSubmit={handleSubmitReview} className="sd-comment-form">
+                        <input className="sd-comment-input" value={newReview} onChange={e=>setNewReview(e.target.value)} placeholder="Escreve algo…" />
+                        <button type="submit" className="sd-comment-send" disabled={submitting}><Send size={14}/></button>
+                      </form>
+                    ) : (
+                      <div className="sd-no-auth">Faz login para participar na conversa.</div>
+                    )}
+                    {reviews.length === 0 && <div className="sd-empty">Sê o primeiro a comentar!</div>}
+                    {reviews.map(r => (
+                      <div key={r.id} className="sd-comment-item">
+                        <div className="sd-comment-header">
+                          <div className="sd-comment-user">
+                            <div className="sd-comment-av">{(r.user_name?.[0]||'U').toUpperCase()}</div>
+                            <span className="sd-comment-name">{r.user_name}</span>
+                          </div>
+                          {user?.is_admin && <button className="sd-comment-del" onClick={()=>handleDeleteReview(r.id)}><Trash2 size={13}/></button>}
                         </div>
-                    </div>
-                )}
-
-                {/* ABA: HORARIOS */}
-                {activeTab === 'schedules' && (
-                     <div className="space-y-4 animate-fade-in">
-                        {user && user.is_admin && (
-                           <form onSubmit={handleAddSchedule} className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex flex-col gap-3">
-                              <h4 className="font-bold text-blue-800 text-sm flex items-center gap-2"><Plus size={16}/> Adicionar Partida</h4>
-                              <div className="flex gap-2">
-                                <select value={newSchedule.train_type} onChange={e => setNewSchedule({...newSchedule, train_type: e.target.value})} className="p-2 rounded-lg border-none outline-none ring-1 ring-blue-200 text-sm bg-white">
-                                  <option value="Urbano">Urbano</option>
-                                  <option value="Regional">Regional</option>
-                                  <option value="Intercidades">Intercidades</option>
-                                  <option value="Alfa Pendular">Alfa Pendular</option>
-                                </select>
-                                <input type="time" value={newSchedule.departure_time} onChange={e => setNewSchedule({...newSchedule, departure_time: e.target.value})} className="p-2 rounded-lg border-none outline-none ring-1 ring-blue-200 text-sm bg-white" required />
-                              </div>
-                              <div className="flex gap-2">
-                                <input type="text" placeholder="Destino (ex: Porto)" value={newSchedule.destination} onChange={e => setNewSchedule({...newSchedule, destination: e.target.value})} className="flex-1 p-2 rounded-lg border-none outline-none ring-1 ring-blue-200 text-sm bg-white" required />
-                                <button type="submit" disabled={submitting} className="bg-blue-600 text-white px-4 rounded-lg text-sm font-bold hover:bg-blue-700 transition-colors">Gravar</button>
-                              </div>
-                           </form>
-                        )}
-
-                        {schedules.length === 0 ? (
-                            <div className="text-center py-10 text-gray-400 border-2 border-dashed border-gray-100 rounded-xl">
-                              <p>Sem partidas previstas.</p>
-                            </div>
-                        ) : (
-                            schedules.map(s => (
-                                <div key={s.id} className="flex justify-between p-4 bg-white border border-gray-100 rounded-xl shadow-sm group">
-                                    <div>
-                                        <p className="font-bold text-slate-800">{s.destination}</p>
-                                        <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">{s.train_type}</p>
-                                    </div>
-                                    <div className="text-right flex items-center gap-3">
-                                        <div>
-                                            <p className="font-bold text-xl text-slate-900">{s.departure_time.slice(0,5)}</p>
-                                            <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Previsto</span>
-                                        </div>
-                                        {user && user.is_admin && (
-                                            <button onClick={() => handleDeleteSchedule(s.id)} className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all p-1">
-                                              <Trash2 size={18}/>
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                     </div>
-                )}
-
-                {/* ABA: OCORRENCIAS */}
-                {activeTab === 'occurrences' && (
-                  <div className="animate-fade-in">
-                    <div className="bg-red-50/50 rounded-2xl p-6 border border-red-100">
-                        <h3 className="font-bold mb-2 flex items-center gap-2 text-red-800">Reportar Problema</h3>
-                        <p className="text-xs text-red-600 mb-6 leading-relaxed">A tua localização GPS será anexada automaticamente ao relatório para a equipa técnica.</p>
-                        
-                        {user ? (
-                            <form onSubmit={handleReportOccurrence} className="flex flex-col gap-3 mb-8">
-                                <textarea value={newOccurrence} onChange={(e) => setNewOccurrence(e.target.value)} className="w-full p-4 rounded-xl border-none ring-1 ring-red-200 focus:ring-2 focus:ring-red-500 outline-none transition-shadow text-sm resize-none" placeholder="Ex: Máquina de bilhetes número 2 avariada..." rows="3" />
-                                <button type="submit" disabled={submitting} className="bg-red-600 text-white py-3.5 rounded-xl font-bold hover:bg-red-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 shadow-md">
-                                  <MapPin size={18} /> Enviar Ocorrência via GPS
-                                </button>
-                            </form>
-                        ) : (
-                          <p className="text-sm text-red-700 mb-8 bg-red-100 p-4 rounded-xl text-center">Inicia sessão para reportar problemas.</p>
-                        )}
-
-                        <h4 className="font-bold text-sm text-slate-800 mb-4 border-b border-red-100 pb-2">Histórico Técnico</h4>
-                        <div className="space-y-3">
-                            {occurrences.length === 0 && <p className="text-center text-gray-400 py-6 text-sm">Sem ocorrências ativas nesta estação.</p>}
-                            {occurrences.map(o => (
-                                <div key={o.id} className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-l-red-500 border border-gray-100 relative group">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="font-bold text-xs text-slate-800">{o.user_name}</span>
-                                        <span className="text-[10px] text-red-600 font-mono bg-red-50 px-2 py-1 rounded-md">Lat: {Number(o.latitude || 0).toFixed(4)}, Lon: {Number(o.longitude || 0).toFixed(4)}</span>
-                                    </div>
-                                    <p className="text-sm text-gray-600">{o.description}</p>
-                                    {user && user.is_admin && (
-                                      <button onClick={() => handleDeleteOccurrence(o.id)} className="absolute -top-3 -right-3 text-green-500 hover:text-white hover:bg-green-500 p-2 bg-green-50 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-all" title="Marcar como resolvido">
-                                        <CircleCheck size={16} />
-                                      </button>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+                        <div className="sd-comment-text">{r.content}</div>
+                      </div>
+                    ))}
                   </div>
-                )}
+                </div>
+              )}
+
+              {/* ── SCHEDULES ── */}
+              {activeTab === 'schedules' && (
+                <div>
+                  {user?.is_admin && (
+                    <form onSubmit={handleAddSchedule} className="sd-add-sched">
+                      <div className="sd-add-sched-title"><Plus size={12}/> Adicionar partida</div>
+                      <div className="sd-sched-row">
+                        <select value={newSchedule.train_type} onChange={e=>setNewSchedule({...newSchedule,train_type:e.target.value})} className="sd-sched-input sd-sched-select">
+                          <option>Urbano</option><option>Regional</option><option>Intercidades</option><option>Alfa Pendular</option>
+                        </select>
+                        <input type="time" value={newSchedule.departure_time} onChange={e=>setNewSchedule({...newSchedule,departure_time:e.target.value})} className="sd-sched-input" style={{flex:1}} required/>
+                      </div>
+                      <div className="sd-sched-row">
+                        <input type="text" placeholder="Destino (ex: Porto)" value={newSchedule.destination} onChange={e=>setNewSchedule({...newSchedule,destination:e.target.value})} className="sd-sched-input sd-sched-dest" required/>
+                        <button type="submit" disabled={submitting} className="sd-sched-save">Gravar</button>
+                      </div>
+                    </form>
+                  )}
+                  {schedules.length === 0
+                    ? <div className="sd-no-schedules">Sem partidas previstas.</div>
+                    : schedules.map(s => (
+                      <div key={s.id} className="sd-sched-item">
+                        <div>
+                          <div className="sd-sched-dest-name">{s.destination}</div>
+                          <div className="sd-sched-type">{s.train_type}</div>
+                        </div>
+                        <div className="sd-sched-right">
+                          <div style={{textAlign:'right'}}>
+                            <div className="sd-sched-time">{s.departure_time.slice(0,5)}</div>
+                            <span className="sd-sched-status">Previsto</span>
+                          </div>
+                          {user?.is_admin && <button className="sd-sched-del" onClick={()=>handleDeleteSchedule(s.id)}><Trash2 size={15}/></button>}
+                        </div>
+                      </div>
+                    ))
+                  }
+                </div>
+              )}
+
+              {/* ── OCCURRENCES ── */}
+              {activeTab === 'occurrences' && (
+                <div>
+                  <div className="sd-occ-report">
+                    <div className="sd-occ-report-title"><TriangleAlert size={12}/> Reportar Problema</div>
+                    <div className="sd-occ-hint">A tua localização GPS será anexada automaticamente ao relatório.</div>
+                    {user ? (
+                      <form onSubmit={handleReportOccurrence}>
+                        <textarea className="sd-occ-textarea" value={newOccurrence} onChange={e=>setNewOccurrence(e.target.value)} placeholder="Ex: Máquina de bilhetes nº 2 avariada…" rows={3} />
+                        <button type="submit" className="sd-occ-submit" disabled={submitting}><MapPin size={14}/> Enviar via GPS</button>
+                      </form>
+                    ) : (
+                      <div className="sd-occ-no-auth">Inicia sessão para reportar problemas.</div>
+                    )}
+                  </div>
+
+                  <div className="sd-occ-history-title">Histórico Técnico</div>
+                  {occurrences.length === 0 && <div className="sd-empty">Sem ocorrências ativas nesta estação.</div>}
+                  {occurrences.map(o => (
+                    <div key={o.id} className="sd-occ-item">
+                      <div className="sd-occ-meta">
+                        <span className="sd-occ-user">{o.user_name}</span>
+                        <span className="sd-occ-coords">{Number(o.latitude||0).toFixed(4)}, {Number(o.longitude||0).toFixed(4)}</span>
+                      </div>
+                      <div className="sd-occ-desc">{o.description}</div>
+                      {user?.is_admin && (
+                        <button className="sd-occ-resolve" onClick={()=>handleDeleteOccurrence(o.id)} title="Marcar como resolvido"><CircleCheck size={13}/></button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
 
             </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ─── SUB-COMPONENTS ──────────────────────────────────────── */
+function ToastBox({ toast, setToast }) {
+  const icons = { success:<CircleCheck size={18}/>, error:<CircleX size={18}/>, info:<Info size={18}/>, warning:<TriangleAlert size={18}/> };
+  return (
+    <div className={`sd-toast sd-toast-${toast.type}`}>
+      <span style={{flexShrink:0}}>{icons[toast.type]}</span>
+      <span style={{flex:1}}>{toast.message}</span>
+      <button className="sd-toast-close" onClick={()=>setToast(null)}><X size={15}/></button>
+    </div>
+  );
+}
+
+function DialogBox({ dialog, closeDialog }) {
+  return (
+    <div className="sd-dialog-bg">
+      <div className="sd-dialog">
+        <div className={`sd-dialog-icon ${dialog.type==='danger'?'sd-dialog-icon-danger':'sd-dialog-icon-success'}`}>
+          {dialog.type==='danger' ? <TriangleAlert size={20}/> : <CircleCheck size={20}/>}
+        </div>
+        <h3>{dialog.title}</h3>
+        <p>{dialog.message}</p>
+        <div className="sd-dialog-btns">
+          <button className="sd-dialog-cancel" onClick={closeDialog}>Cancelar</button>
+          <button
+            className={dialog.type==='danger'?'sd-dialog-confirm-danger':'sd-dialog-confirm-success'}
+            onClick={()=>{ dialog.onConfirm(); closeDialog(); }}
+          >Confirmar</button>
         </div>
       </div>
     </div>
