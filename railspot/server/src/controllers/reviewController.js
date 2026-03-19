@@ -20,42 +20,41 @@ exports.getReviewsByStation = async (req, res) => {
 
 exports.addReview = async (req, res) => {
   const { stationId } = req.params;
-  const { comment } = req.body; // <-- Confirma que o React envia o JSON com "comment"
+  const { content } = req.body; 
   
   if (!req.user || !req.user.id) {
      return res.status(401).json({ error: 'Utilizador não autenticado.' });
   }
   const userId = req.user.id;
 
-  if (!comment || comment.trim() === '') {
-    return res.status(400).json({ error: 'O comentário/ocorrência não pode estar vazio.' });
+  if (!content || content.trim() === '') {
+    return res.status(400).json({ error: 'O comentário não pode estar vazio.' });
   }
 
   try {
-    // ATENÇÃO: Confirma se as colunas na tua tabela se chamam mesmo station_id, user_id e comment
+    // 1. Inserir a review na base de dados
     const result = await db.query(
-      'INSERT INTO reviews (station_id, user_id, comment) VALUES ($1, $2, $3) RETURNING id',
-      [stationId, userId, comment]
+      'INSERT INTO reviews (station_id, user_id, content) VALUES ($1, $2, $3) RETURNING id',
+      [stationId, userId, content]
     );
     
     const insertId = result.rows && result.rows.length > 0 ? result.rows[0].id : null;
     
+    // 2. IR BUSCAR O NOME EXATO DO UTILIZADOR À BASE DE DADOS
+    const userResult = await db.query('SELECT name FROM users WHERE id = $1', [userId]);
+    const userName = userResult.rows && userResult.rows.length > 0 ? userResult.rows[0].name : 'Utilizador';
+
+    // 3. Devolver a review com o nome incluído (para o React desenhar bonito)
     res.status(201).json({ 
-      message: 'Ocorrência adicionada com sucesso!',
-      review: {
-        id: insertId,
-        station_id: stationId,
-        user_id: userId,
-        comment: comment
-      }
+      id: insertId,
+      station_id: stationId,
+      user_id: userId,
+      content: content,
+      user_name: userName // <--- O NOME VEM DAQUI AGORA!
     });
   } catch (error) {
-    // DEBUG AVANÇADO PARA DESCOBRIR O ERRO EXATO
-    console.error('\n--- 🚨 ERRO SQL AO ADICIONAR OCORRÊNCIA ---');
+    console.error('\n--- 🚨 ERRO SQL AO ADICIONAR COMENTÁRIO ---');
     console.error('Mensagem de Erro:', error.message);
-    console.error('Detalhe do Postgres:', error.detail);
-    console.error('Tabela a falhar:', error.table);
-    console.error('-------------------------------------------\n');
     res.status(500).json({ error: 'Erro ao guardar na BD: ' + error.message });
   }
 };

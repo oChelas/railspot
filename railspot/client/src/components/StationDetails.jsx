@@ -591,7 +591,12 @@ function StationDetails({ station, onBack }) {
     setSubmitting(true); const token = localStorage.getItem('token');
     try {
       const r = await fetch(`http://localhost:5000/api/reviews/${stationId}`, { method:'POST', headers:{'Content-Type':'application/json','x-auth-token':token}, body:JSON.stringify({content:newReview}) });
-      if (r.ok) { const s = await r.json(); setReviews([s,...reviews]); setNewReview(''); showToast('Comentário adicionado!','success'); }
+      if (r.ok) { 
+        const s = await r.json(); 
+        setReviews([s, ...reviews]); // Agora o s (review que vem do backend) já tem o user_name correto da Base de Dados!
+        setNewReview(''); 
+        showToast('Comentário adicionado!','success'); 
+      }
       else { const err = await r.json().catch(()=>({})); showToast(err.error||'Erro.','error'); }
     } catch { showToast('Erro de ligação.','error'); } finally { setSubmitting(false); }
   };
