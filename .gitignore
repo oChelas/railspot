@@ -1,0 +1,11 @@
+# Ignora node_modules em qualquer nível (raiz, client e server)
+node_modules/
+**/node_modules/
+
+# Ignora ficheiros de ambiente
+.env
+**/.env
+
+# Ignora pastas de build/dist (ex: do Vite)
+dist/
+client/dev-dist/
