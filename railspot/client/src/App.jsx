@@ -190,7 +190,6 @@ const TrainScene = memo(function TrainScene({ refProp }) {
                     <stop offset="100%" stopColor="rgba(99,60,200,.5)"/>
                   </linearGradient>
                 </defs>
-                {/* Loco */}
                 <polygon points="0,42 22,28 22,58 0,60" fill="rgba(99,60,200,.7)"/>
                 <polygon points="22,24 118,24 126,14 30,14" fill="rgba(167,139,250,.4)"/>
                 <polygon points="118,24 126,14 126,58 118,60" fill="rgba(80,50,180,.5)"/>
@@ -205,34 +204,24 @@ const TrainScene = memo(function TrainScene({ refProp }) {
                 <circle cx="72" cy="60" r="3" fill="rgba(167,139,250,.4)"/>
                 <circle cx="105" cy="60" r="7" fill="rgba(20,10,45,.9)" stroke="rgba(167,139,250,.4)" strokeWidth="1"/>
                 <circle cx="105" cy="60" r="3" fill="rgba(167,139,250,.3)"/>
-                {/* Car 1 */}
                 <polygon points="130,30 250,30 258,20 138,20" fill="rgba(139,92,246,.35)"/>
                 <polygon points="250,30 258,20 258,60 250,62" fill="rgba(80,50,180,.4)"/>
                 <polygon points="130,30 138,20 138,62 130,64" fill="rgba(80,50,180,.45)"/>
                 <rect x="130" y="30" width="120" height="32" rx="3" fill="rgba(139,92,246,.45)"/>
-                {[136,162,188,214].map((wx,j)=>(
-                  <rect key={j} x={wx} y="35" width="18" height="18" rx="1" fill="rgba(0,0,0,.3)"/>
-                ))}
+                {[136,162,188,214].map((wx,j)=>(<rect key={j} x={wx} y="35" width="18" height="18" rx="1" fill="rgba(0,0,0,.3)"/>))}
                 <circle cx="150" cy="62" r="6" fill="rgba(20,10,45,.9)" stroke="rgba(139,92,246,.45)" strokeWidth="1"/>
                 <circle cx="232" cy="62" r="6" fill="rgba(20,10,45,.9)" stroke="rgba(139,92,246,.45)" strokeWidth="1"/>
-                {/* Car 2 */}
                 <polygon points="262,30 382,30 390,20 270,20" fill="rgba(139,92,246,.3)"/>
                 <polygon points="382,30 390,20 390,60 382,62" fill="rgba(80,50,180,.35)"/>
                 <polygon points="262,30 270,20 270,62 262,64" fill="rgba(80,50,180,.4)"/>
                 <rect x="262" y="30" width="120" height="32" rx="3" fill="rgba(99,70,200,.4)"/>
-                {[268,294,320,346].map((wx,j)=>(
-                  <rect key={j} x={wx} y="35" width="18" height="18" rx="1" fill="rgba(0,0,0,.28)"/>
-                ))}
+                {[268,294,320,346].map((wx,j)=>(<rect key={j} x={wx} y="35" width="18" height="18" rx="1" fill="rgba(0,0,0,.28)"/>))}
                 <circle cx="282" cy="62" r="6" fill="rgba(20,10,45,.9)" stroke="rgba(139,92,246,.4)" strokeWidth="1"/>
                 <circle cx="364" cy="62" r="6" fill="rgba(20,10,45,.9)" stroke="rgba(139,92,246,.4)" strokeWidth="1"/>
-                {/* Car 3 */}
                 <polygon points="394,30 480,30 480,20 402,20" fill="rgba(99,70,200,.25)"/>
                 <rect x="394" y="30" width="86" height="32" rx="3" fill="rgba(99,70,200,.35)"/>
-                {[400,426,452].map((wx,j)=>(
-                  <rect key={j} x={wx} y="35" width="18" height="18" rx="1" fill="rgba(0,0,0,.25)"/>
-                ))}
+                {[400,426,452].map((wx,j)=>(<rect key={j} x={wx} y="35" width="18" height="18" rx="1" fill="rgba(0,0,0,.25)"/>))}
                 <circle cx="414" cy="62" r="6" fill="rgba(20,10,45,.9)" stroke="rgba(99,70,200,.38)" strokeWidth="1"/>
-                {/* Rails */}
                 <line x1="-10" y1="67" x2="490" y2="67" stroke="rgba(167,139,250,.18)" strokeWidth="1.5"/>
               </svg>
             </div>
@@ -242,173 +231,39 @@ const TrainScene = memo(function TrainScene({ refProp }) {
               <div className="rs-train-bob">
                 <svg width="860" height="148" viewBox="0 0 860 148" fill="none">
                   <defs>
-                    {/* Body gradient */}
-                    <linearGradient id="lb" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="rgba(185,160,255,.75)"/>
-                      <stop offset="50%" stopColor="rgba(139,92,246,.68)"/>
-                      <stop offset="100%" stopColor="rgba(90,50,200,.65)"/>
-                    </linearGradient>
-                    <linearGradient id="cb" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="rgba(167,139,250,.62)"/>
-                      <stop offset="100%" stopColor="rgba(99,60,200,.58)"/>
-                    </linearGradient>
-                    {/* Window glass */}
-                    <linearGradient id="wg" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0%" stopColor="rgba(220,235,255,.22)"/>
-                      <stop offset="35%" stopColor="rgba(180,210,255,.08)"/>
-                      <stop offset="100%" stopColor="rgba(0,0,0,.18)"/>
-                    </linearGradient>
-                    {/* Window reflection */}
-                    <linearGradient id="wr" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0%" stopColor="rgba(255,255,255,.18)"/>
-                      <stop offset="100%" stopColor="rgba(255,255,255,0)"/>
-                    </linearGradient>
-                    {/* Top face */}
-                    <linearGradient id="tf" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="rgba(210,195,255,.5)"/>
-                      <stop offset="100%" stopColor="rgba(167,139,250,.3)"/>
-                    </linearGradient>
-                    {/* Right/depth face */}
-                    <linearGradient id="rf" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="rgba(80,45,180,.7)"/>
-                      <stop offset="100%" stopColor="rgba(60,30,150,.6)"/>
-                    </linearGradient>
-                    {/* Headlight glow */}
-                    <radialGradient id="hl" cx="50%" cy="50%" r="50%">
-                      <stop offset="0%" stopColor="rgba(255,245,190,1)"/>
-                      <stop offset="50%" stopColor="rgba(255,220,100,.4)"/>
-                      <stop offset="100%" stopColor="transparent"/>
-                    </radialGradient>
-                    {/* Motion blur */}
-                    <linearGradient id="mb" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="rgba(139,92,246,.18)"/>
-                      <stop offset="100%" stopColor="transparent"/>
-                    </linearGradient>
-                    {/* Wheel gradient */}
-                    <radialGradient id="wh" cx="40%" cy="35%" r="60%">
-                      <stop offset="0%" stopColor="rgba(70,50,140,.9)"/>
-                      <stop offset="100%" stopColor="rgba(20,10,50,.98)"/>
-                    </radialGradient>
+                    <linearGradient id="lb" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="rgba(185,160,255,.75)"/><stop offset="50%" stopColor="rgba(139,92,246,.68)"/><stop offset="100%" stopColor="rgba(90,50,200,.65)"/></linearGradient>
+                    <linearGradient id="cb" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="rgba(167,139,250,.62)"/><stop offset="100%" stopColor="rgba(99,60,200,.58)"/></linearGradient>
+                    <linearGradient id="wg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="rgba(220,235,255,.22)"/><stop offset="35%" stopColor="rgba(180,210,255,.08)"/><stop offset="100%" stopColor="rgba(0,0,0,.18)"/></linearGradient>
+                    <linearGradient id="wr" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="rgba(255,255,255,.18)"/><stop offset="100%" stopColor="rgba(255,255,255,0)"/></linearGradient>
+                    <linearGradient id="tf" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="rgba(210,195,255,.5)"/><stop offset="100%" stopColor="rgba(167,139,250,.3)"/></linearGradient>
+                    <linearGradient id="rf" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="rgba(80,45,180,.7)"/><stop offset="100%" stopColor="rgba(60,30,150,.6)"/></linearGradient>
+                    <radialGradient id="hl" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="rgba(255,245,190,1)"/><stop offset="50%" stopColor="rgba(255,220,100,.4)"/><stop offset="100%" stopColor="transparent"/></radialGradient>
+                    <linearGradient id="mb" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="rgba(139,92,246,.18)"/><stop offset="100%" stopColor="transparent"/></linearGradient>
+                    <radialGradient id="wh" cx="40%" cy="35%" r="60%"><stop offset="0%" stopColor="rgba(70,50,140,.9)"/><stop offset="100%" stopColor="rgba(20,10,50,.98)"/></radialGradient>
                   </defs>
-
-                  {/* MOTION BLUR STREAK */}
                   <rect x="-280" y="46" width="320" height="74" rx="6" fill="url(#mb)" opacity=".7"/>
                   <rect x="-180" y="60" width="220" height="42" rx="3" fill="url(#mb)" opacity=".4"/>
-
-                  {/* ═══ LOCOMOTIVE ═══ */}
-                  {/* Top 3D face */}
                   <polygon points="38,44 178,44 196,20 56,20" fill="url(#tf)" stroke="rgba(210,195,255,.25)" strokeWidth=".5"/>
-                  {/* Nose front face */}
                   <polygon points="0,82 38,46 38,118 0,120" fill="rgba(80,45,200,.75)" stroke="rgba(167,139,250,.25)" strokeWidth=".5"/>
-                  {/* Nose highlight stripe */}
                   <polygon points="0,82 38,46 38,56 4,84" fill="rgba(210,195,255,.22)"/>
-                  {/* Roof detail */}
                   <rect x="56" y="14" width="40" height="6" rx="2" fill="rgba(210,195,255,.2)" stroke="rgba(196,181,253,.2)" strokeWidth=".5"/>
                   <rect x="100" y="11" width="56" height="9" rx="2" fill="rgba(167,139,250,.25)" stroke="rgba(196,181,253,.2)" strokeWidth=".5"/>
-                  {/* Pantograph arms */}
                   <line x1="118" y1="20" x2="112" y2="5" stroke="rgba(196,181,253,.4)" strokeWidth="1.5"/>
                   <line x1="138" y1="20" x2="144" y2="5" stroke="rgba(196,181,253,.4)" strokeWidth="1.5"/>
                   <line x1="108" y1="5" x2="148" y2="5" stroke="rgba(196,181,253,.45)" strokeWidth="1.5"/>
                   <line x1="105" y1="9" x2="151" y2="9" stroke="rgba(196,181,253,.3)" strokeWidth="1"/>
-                  {/* Main loco body */}
                   <rect x="38" y="44" width="140" height="74" rx="7" fill="url(#lb)" stroke="rgba(196,181,253,.2)" strokeWidth=".5"/>
-                  {/* Right depth face */}
                   <polygon points="178,44 196,20 196,118 178,118" fill="url(#rf)" stroke="rgba(80,45,180,.2)" strokeWidth=".5"/>
-                  {/* Front nose window (large) */}
                   <polygon points="4,68 36,50 36,100 4,108" fill="url(#wg)" stroke="rgba(200,220,255,.2)" strokeWidth=".5"/>
                   <polygon points="4,68 28,57 36,52 36,62 12,74" fill="url(#wr)"/>
-                  {/* Side windows – 3 large */}
-                  {[44,90,136].map((wx,j)=>(
-                    <g key={j}>
-                      <rect x={wx} y="52" width="36" height="44" rx="3" fill="url(#wg)" stroke="rgba(200,220,255,.22)" strokeWidth=".5"/>
-                      <polygon points={`${wx},52 ${wx+26},52 ${wx+36},52 ${wx+20},60 ${wx},63`} fill="url(#wr)"/>
-                    </g>
-                  ))}
-                  {/* Accent stripe */}
+                  {[44,90,136].map((wx,j)=>(<g key={j}><rect x={wx} y="52" width="36" height="44" rx="3" fill="url(#wg)" stroke="rgba(200,220,255,.22)" strokeWidth=".5"/><polygon points={`${wx},52 ${wx+26},52 ${wx+36},52 ${wx+20},60 ${wx},63`} fill="url(#wr)"/></g>))}
                   <rect x="38" y="100" width="140" height="5" rx="1" fill="rgba(210,195,255,.38)"/>
-                  {/* Bottom skirt */}
                   <rect x="30" y="118" width="148" height="10" rx="3" fill="rgba(40,20,90,.85)" stroke="rgba(167,139,250,.18)" strokeWidth=".5"/>
-                  {/* Headlight outer ring */}
                   <circle cx="4" cy="82" r="11" fill="rgba(15,8,40,.9)" stroke="rgba(167,139,250,.3)" strokeWidth="1"/>
                   <circle cx="4" cy="82" r="7" fill="url(#hl)"/>
                   <circle cx="4" cy="82" r="18" fill="rgba(255,230,140,.06)"/>
-                  {/* Bogies */}
-                  {[[42,105,126],[120,183]].map((bxs, bi)=>(
-                    <g key={bi}>
-                      <rect x={bxs[0]-2} y="125" width={bxs[bxs.length-1]-bxs[0]+16} height="10" rx="4" fill="rgba(30,15,70,.95)" stroke="rgba(167,139,250,.2)" strokeWidth=".5"/>
-                      {bxs.map(cx=>(
-                        <g key={cx}>
-                          <circle cx={cx+7} cy="140" r="10" fill="url(#wh)" stroke="rgba(167,139,250,.55)" strokeWidth="1.5"/>
-                          <circle cx={cx+7} cy="140" r="5"  fill="rgba(120,90,220,.35)"/>
-                          <circle cx={cx+7} cy="140" r="2"  fill="rgba(210,195,255,.65)"/>
-                          {/* Wheel spokes */}
-                          {[0,60,120,180,240,300].map(angle=>(
-                            <line key={angle}
-                              x1={cx+7 + Math.cos(angle*Math.PI/180)*2.5}
-                              y1={140    + Math.sin(angle*Math.PI/180)*2.5}
-                              x2={cx+7 + Math.cos(angle*Math.PI/180)*8}
-                              y2={140    + Math.sin(angle*Math.PI/180)*8}
-                              stroke="rgba(167,139,250,.4)" strokeWidth=".8"/>
-                          ))}
-                        </g>
-                      ))}
-                    </g>
-                  ))}
-
-                  {/* ═══ CARRIAGE (reused 3 times) ═══ */}
-                  {[200, 410, 620].map((sx, ci)=>(
-                    <g key={ci}>
-                      {/* Top face */}
-                      <polygon points={`${sx},50 ${sx+194},50 ${sx+210},26 ${sx+16},26`} fill="url(#tf)" stroke="rgba(210,195,255,.18)" strokeWidth=".5"/>
-                      {/* Left end face */}
-                      <polygon points={`${sx},50 ${sx+16},26 ${sx+16},118 ${sx},120`} fill="rgba(75,42,175,.65)" stroke="rgba(167,139,250,.15)" strokeWidth=".5"/>
-                      {/* Right end face */}
-                      <polygon points={`${sx+194},50 ${sx+210},26 ${sx+210},118 ${sx+194},120`} fill="rgba(70,38,170,.6)" stroke="rgba(167,139,250,.12)" strokeWidth=".5"/>
-                      {/* Main body */}
-                      <rect x={sx} y="50" width="194" height="68" rx="5" fill="url(#cb)" stroke="rgba(196,181,253,.18)" strokeWidth=".5"/>
-                      {/* Windows — 5 */}
-                      {[0,1,2,3,4].map(j=>{
-                        const wx = sx + 10 + j*38;
-                        return (
-                          <g key={j}>
-                            <rect x={wx} y="58" width="30" height="38" rx="3" fill="url(#wg)" stroke="rgba(200,220,255,.2)" strokeWidth=".5"/>
-                            <polygon points={`${wx},58 ${wx+22},58 ${wx+30},58 ${wx+16},66 ${wx},69`} fill="url(#wr)"/>
-                          </g>
-                        );
-                      })}
-                      {/* Accent stripe */}
-                      <rect x={sx} y="100" width="194" height="5" rx="1" fill="rgba(196,181,253,.3)"/>
-                      {/* Bottom skirt */}
-                      <rect x={sx-2} y="118" width="198" height="10" rx="3" fill="rgba(40,20,90,.85)" stroke="rgba(167,139,250,.15)" strokeWidth=".5"/>
-                      {/* Door seam */}
-                      <line x1={sx+97} y1="50" x2={sx+97} y2="118" stroke="rgba(255,255,255,.06)" strokeWidth=".8"/>
-                      {/* Connector to prev */}
-                      {ci > 0 && <rect x={sx-6} y="78" width="7" height="14" rx="2" fill="rgba(80,50,180,.5)" stroke="rgba(167,139,250,.15)" strokeWidth=".5"/>}
-                      {/* Bogies */}
-                      {[sx+18, sx+160].map(bx=>(
-                        <g key={bx}>
-                          <rect x={bx} y="125" width="36" height="10" rx="4" fill="rgba(30,15,70,.95)" stroke="rgba(167,139,250,.18)" strokeWidth=".5"/>
-                          {[bx+6, bx+22].map(cx=>(
-                            <g key={cx}>
-                              <circle cx={cx+2} cy="140" r="10" fill="url(#wh)" stroke="rgba(167,139,250,.5)" strokeWidth="1.5"/>
-                              <circle cx={cx+2} cy="140" r="5"  fill="rgba(110,80,210,.35)"/>
-                              <circle cx={cx+2} cy="140" r="2"  fill="rgba(210,195,255,.6)"/>
-                              {[0,60,120,180,240,300].map(a=>(
-                                <line key={a}
-                                  x1={cx+2+Math.cos(a*Math.PI/180)*2.5}
-                                  y1={140  +Math.sin(a*Math.PI/180)*2.5}
-                                  x2={cx+2+Math.cos(a*Math.PI/180)*8}
-                                  y2={140  +Math.sin(a*Math.PI/180)*8}
-                                  stroke="rgba(167,139,250,.38)" strokeWidth=".8"/>
-                              ))}
-                            </g>
-                          ))}
-                        </g>
-                      ))}
-                    </g>
-                  ))}
-
-                  {/* RAILS at ground level */}
+                  {[[42,105,126],[120,183]].map((bxs,bi)=>(<g key={bi}><rect x={bxs[0]-2} y="125" width={bxs[bxs.length-1]-bxs[0]+16} height="10" rx="4" fill="rgba(30,15,70,.95)" stroke="rgba(167,139,250,.2)" strokeWidth=".5"/>{bxs.map(cx=>(<g key={cx}><circle cx={cx+7} cy="140" r="10" fill="url(#wh)" stroke="rgba(167,139,250,.55)" strokeWidth="1.5"/><circle cx={cx+7} cy="140" r="5" fill="rgba(120,90,220,.35)"/><circle cx={cx+7} cy="140" r="2" fill="rgba(210,195,255,.65)"/>{[0,60,120,180,240,300].map(a=>(<line key={a} x1={cx+7+Math.cos(a*Math.PI/180)*2.5} y1={140+Math.sin(a*Math.PI/180)*2.5} x2={cx+7+Math.cos(a*Math.PI/180)*8} y2={140+Math.sin(a*Math.PI/180)*8} stroke="rgba(167,139,250,.4)" strokeWidth=".8"/>))}</g>))}</g>))}
+                  {[200,410,620].map((sx,ci)=>(<g key={ci}><polygon points={`${sx},50 ${sx+194},50 ${sx+210},26 ${sx+16},26`} fill="url(#tf)" stroke="rgba(210,195,255,.18)" strokeWidth=".5"/><polygon points={`${sx},50 ${sx+16},26 ${sx+16},118 ${sx},120`} fill="rgba(75,42,175,.65)" stroke="rgba(167,139,250,.15)" strokeWidth=".5"/><polygon points={`${sx+194},50 ${sx+210},26 ${sx+210},118 ${sx+194},120`} fill="rgba(70,38,170,.6)" stroke="rgba(167,139,250,.12)" strokeWidth=".5"/><rect x={sx} y="50" width="194" height="68" rx="5" fill="url(#cb)" stroke="rgba(196,181,253,.18)" strokeWidth=".5"/>{[0,1,2,3,4].map(j=>{ const wx=sx+10+j*38; return (<g key={j}><rect x={wx} y="58" width="30" height="38" rx="3" fill="url(#wg)" stroke="rgba(200,220,255,.2)" strokeWidth=".5"/><polygon points={`${wx},58 ${wx+22},58 ${wx+30},58 ${wx+16},66 ${wx},69`} fill="url(#wr)"/></g>); })}<rect x={sx} y="100" width="194" height="5" rx="1" fill="rgba(196,181,253,.3)"/><rect x={sx-2} y="118" width="198" height="10" rx="3" fill="rgba(40,20,90,.85)" stroke="rgba(167,139,250,.15)" strokeWidth=".5"/><line x1={sx+97} y1="50" x2={sx+97} y2="118" stroke="rgba(255,255,255,.06)" strokeWidth=".8"/>{ci>0&&<rect x={sx-6} y="78" width="7" height="14" rx="2" fill="rgba(80,50,180,.5)" stroke="rgba(167,139,250,.15)" strokeWidth=".5"/>}{[sx+18,sx+160].map(bx=>(<g key={bx}><rect x={bx} y="125" width="36" height="10" rx="4" fill="rgba(30,15,70,.95)" stroke="rgba(167,139,250,.18)" strokeWidth=".5"/>{[bx+6,bx+22].map(cx=>(<g key={cx}><circle cx={cx+2} cy="140" r="10" fill="url(#wh)" stroke="rgba(167,139,250,.5)" strokeWidth="1.5"/><circle cx={cx+2} cy="140" r="5" fill="rgba(110,80,210,.35)"/><circle cx={cx+2} cy="140" r="2" fill="rgba(210,195,255,.6)"/>{[0,60,120,180,240,300].map(a=>(<line key={a} x1={cx+2+Math.cos(a*Math.PI/180)*2.5} y1={140+Math.sin(a*Math.PI/180)*2.5} x2={cx+2+Math.cos(a*Math.PI/180)*8} y2={140+Math.sin(a*Math.PI/180)*8} stroke="rgba(167,139,250,.38)" strokeWidth=".8"/>))}</g>))}</g>))}</g>))}
                   <line x1="-40" y1="147" x2="900" y2="147" stroke="rgba(167,139,250,.3)" strokeWidth="2"/>
                   <line x1="-40" y1="143" x2="900" y2="143" stroke="rgba(167,139,250,.2)" strokeWidth="1.5"/>
                 </svg>
@@ -419,7 +274,6 @@ const TrainScene = memo(function TrainScene({ refProp }) {
         </div>
   );
 });
-
 
 /* ─────────────────────────────────────────────────────────
    CSS
@@ -449,20 +303,13 @@ const CSS = `
   .rs-stn { position:absolute; font-family:'DM Sans',sans-serif; font-size:11px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:rgba(167,139,250,.06); white-space:nowrap; pointer-events:none; z-index:0; animation:rsStn var(--sd) linear infinite var(--sdd); }
   @keyframes rsStn { from{transform:translateX(110vw);} to{transform:translateX(-120vw);} }
 
-  /* ═══════════════════════════════════
-     PORTUGUESE LANDSCAPE
-  ═══════════════════════════════════ */
   .rs-landscape {
     position:absolute; bottom:0; left:-8%; right:-8%;
     height:62%; pointer-events:none; z-index:0;
     -webkit-mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.2) 12%,rgba(0,0,0,.6) 28%,black 55%);
     mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.2) 12%,rgba(0,0,0,.6) 28%,black 55%);
   }
-  .rs-ls-layer {
-    position:absolute; left:-5%; right:-5%; bottom:0;
-    transition:transform 0.9s cubic-bezier(.22,1,.36,1);
-    will-change:transform;
-  }
+  .rs-ls-layer { position:absolute; left:-5%; right:-5%; bottom:0; transition:transform 0.9s cubic-bezier(.22,1,.36,1); will-change:transform; }
   .rs-ls-layer svg { display:block; width:110%; height:auto; }
 
   .rs-train-scene { position:absolute; bottom:0; left:0; right:0; height:260px; pointer-events:none; z-index:0; overflow:hidden; }
@@ -492,24 +339,16 @@ const CSS = `
 
   .rs-inner { position:absolute; inset:0; z-index:1; display:flex; flex-direction:column; overflow:hidden; }
 
-  /* ── LIQUID GLASS: detail layer dark instead of blinding white ── */
   .rs-detail-layer {
     position:absolute; inset:0; z-index:50; overflow:hidden;
     background:#020617;
     animation:rsExpand var(--exp-dur,.42s) cubic-bezier(.32,.72,0,1) both;
     transform-origin: var(--exp-ox,50%) var(--exp-oy,50%);
   }
-  @keyframes rsExpand {
-    from { clip-path: inset(var(--exp-t) var(--exp-r) var(--exp-b) var(--exp-l) round 22px); }
-    to   { clip-path: inset(0% 0% 0% 0% round 0px); }
-  }
+  @keyframes rsExpand { from { clip-path: inset(var(--exp-t) var(--exp-r) var(--exp-b) var(--exp-l) round 22px); } to { clip-path: inset(0% 0% 0% 0% round 0px); } }
   .rs-detail-layer.closing { animation:rsCollapse .35s cubic-bezier(.32,.72,0,1) both; }
-  @keyframes rsCollapse {
-    from { clip-path: inset(0% 0% 0% 0% round 0px); opacity:1; }
-    to   { clip-path: inset(var(--exp-t) var(--exp-r) var(--exp-b) var(--exp-l) round 22px); opacity:0; }
-  }
+  @keyframes rsCollapse { from { clip-path: inset(0% 0% 0% 0% round 0px); opacity:1; } to { clip-path: inset(var(--exp-t) var(--exp-r) var(--exp-b) var(--exp-l) round 22px); opacity:0; } }
 
-  /* TOPBAR — stronger blur */
   .rs-topbar { position:relative; z-index:10; flex-shrink:0; display:flex; align-items:center; justify-content:space-between; padding:12px 20px; background:rgba(139,92,246,.05); backdrop-filter:blur(48px) saturate(200%); -webkit-backdrop-filter:blur(48px) saturate(200%); border-bottom:1px solid rgba(167,139,250,.12); box-shadow:inset 0 1px 0 rgba(196,181,253,.15); }
   .rs-logo { display:flex; align-items:center; gap:9px; }
   .rs-logo-ico { width:34px; height:34px; border-radius:10px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:rgba(139,92,246,.25); border:1px solid rgba(167,139,250,.3); box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 2px 8px rgba(139,92,246,.2); position:relative; overflow:hidden; }
@@ -545,7 +384,6 @@ const CSS = `
   .rs-swiper { width:100% !important; height:100% !important; padding:16px 0 36px !important; }
   .swiper-slide { width:auto !important; }
 
-  /* ── LIQUID GLASS SHIMMER ── */
   @keyframes rsShimmer { 0%{background-position:-200% center;} 100%{background-position:200% center;} }
   .rs-card::before {
     content:''; position:absolute; inset:0; z-index:4; pointer-events:none; border-radius:22px;
@@ -553,7 +391,6 @@ const CSS = `
     background-size:200% 100%; animation:rsShimmer 5s linear infinite; mix-blend-mode:screen;
   }
 
-  /* ── LIQUID GLASS CARD ── */
   .rs-card {
     width: clamp(185px, 52vw, 265px);
     aspect-ratio: 9 / 14;
@@ -576,13 +413,7 @@ const CSS = `
   .rs-card-name { font-family:'Playfair Display',serif; font-size:clamp(15px,3.5vw,20px); font-weight:900; color:rgba(255,255,255,.95); letter-spacing:-.02em; margin-bottom:5px; line-height:1.15; }
   .rs-card-loc { display:flex; align-items:center; gap:4px; font-size:11px; color:rgba(255,255,255,.38); font-family:'DM Sans',sans-serif; }
 
-  /* 1. BREATHE */
-  .swiper-slide-active .rs-card {
-    animation: rsBreathe 3.5s ease-in-out infinite;
-    will-change: box-shadow;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-  }
+  .swiper-slide-active .rs-card { animation: rsBreathe 3.5s ease-in-out infinite; will-change: box-shadow; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
   @keyframes rsBreathe {
     0%,100% { box-shadow: inset 0 1.5px 0 rgba(196,181,253,.3), 0 24px 60px rgba(0,0,0,.5), 0 0 0 0 rgba(139,92,246,.0); }
     50%      { box-shadow: inset 0 1.5px 0 rgba(196,181,253,.4), 0 32px 80px rgba(0,0,0,.45), 0 0 40px 10px rgba(139,92,246,.2); }
@@ -611,7 +442,6 @@ const CSS = `
 
   .rs-map { position:absolute; inset:0; z-index:0; }
 
-  /* ── LIQUID GLASS BOTTOM NAV ── */
   .rs-botnav { position:absolute; bottom:0; left:0; right:0; z-index:20; padding:0 16px calc(14px + env(safe-area-inset-bottom,0px)); display:flex; justify-content:center; align-items:flex-end; gap:10px; background:linear-gradient(to top,rgba(2,6,23,.45) 0%,transparent 100%); }
   .rs-botnav-inner { display:flex; align-items:center; padding:5px; gap:3px; border-radius:22px; width:min(260px,72vw); background:rgba(139,92,246,.08); backdrop-filter:blur(56px) saturate(240%); -webkit-backdrop-filter:blur(56px) saturate(240%); border:1px solid rgba(167,139,250,.18); box-shadow:inset 0 1px 0 rgba(196,181,253,.25),0 8px 32px rgba(0,0,0,.4); }
   .rs-nb { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:10px 6px; border-radius:17px; border:none; background:transparent; cursor:pointer; transition:all .25s ease; font-family:'DM Sans',sans-serif; -webkit-tap-highlight-color:transparent; }
@@ -654,14 +484,12 @@ const CSS = `
   @media(min-width:640px) { .rs-topbar{padding:12px 28px;} .rs-botnav{padding:0 28px calc(16px + env(safe-area-inset-bottom,0px));} }
 `;
 
-
 const TRACKS   = [18,33,50,67,83];
 const DURS     = [7,11,9,13,8];
 const STNS     = ['Lisboa Oriente','Porto Campanhã','Aveiro · Coimbra-B','Faro · Setúbal','Entroncamento · Sintra','Viana · Évora'];
 const STN_DUR  = [16,22,18,14,20,17];
 const BG_GRADS = ['#12062a,#1e0d40','#06141a,#0d2a35','#0a0a1f,#15153d','#1a1000,#332000','#160618,#2a0d30','#071414,#0e2828'];
 
-/* ─── HOME ──────────────────────────────────────────────── */
 function Home() {
   const navigate   = useNavigate();
   const swiperEl   = useRef(null);
@@ -671,9 +499,9 @@ function Home() {
   const cardRefs   = useRef({});
   const detailRef  = useRef(null);
   const trainRef   = useRef(null);
-  const lsfarRef   = useRef(null);   // landscape far mountains
-  const lsmidRef   = useRef(null);   // landscape mid hills + village
-  const lsnearRef  = useRef(null);   // landscape near vegetation
+  const lsfarRef   = useRef(null);
+  const lsmidRef   = useRef(null);
+  const lsnearRef  = useRef(null);
   const savedIdx   = useRef(parseInt(sessionStorage.getItem('rs_slide_idx') || '0', 10));
 
   const [user, setUser] = useState(() => {
@@ -692,23 +520,15 @@ function Home() {
 
   useEffect(() => {
     if (!user) return;
-    fetch('http://localhost:5000/api/stations')
-      .then(r=>r.json())
-      .then(d=>{ setStations(d); setLoading(false); })
-      .catch(()=>setLoading(false));
+    fetch('http://localhost:5000/api/stations').then(r=>r.json()).then(d=>{ setStations(d); setLoading(false); }).catch(()=>setLoading(false));
   }, [user]);
 
   useEffect(() => {
     if (!stations.length) return;
     stations.forEach(s => {
-      fetch(`http://localhost:5000/api/occurrences/${s.id}`)
-        .then(r=>r.json())
-        .then(data => {
-          if (Array.isArray(data) && data.length > 0) {
-            setOccCounts(prev => ({ ...prev, [s.id]: data.length }));
-          }
-        })
-        .catch(() => {});
+      fetch(`http://localhost:5000/api/occurrences/${s.id}`).then(r=>r.json()).then(data => {
+        if (Array.isArray(data) && data.length > 0) setOccCounts(prev => ({ ...prev, [s.id]: data.length }));
+      }).catch(() => {});
     });
   }, [stations]);
 
@@ -725,12 +545,8 @@ function Home() {
       if (!el || !window.Swiper) return;
       if (swiperObj.current) { swiperObj.current.destroy(true, true); swiperObj.current = null; }
       swiperObj.current = new window.Swiper(el, {
-        effect: 'coverflow',
-        grabCursor: true,
-        centeredSlides: true,
-        slidesPerView: 'auto',
-        initialSlide: savedIdx.current,
-        keyboard: { enabled: true },
+        effect: 'coverflow', grabCursor: true, centeredSlides: true, slidesPerView: 'auto',
+        initialSlide: savedIdx.current, keyboard: { enabled: true },
         coverflowEffect: { rotate:40, stretch:0, depth:175, modifier:1.15, slideShadows:false },
         pagination: { el: el.querySelector('.swiper-pagination'), clickable:true },
         on: {
@@ -740,15 +556,10 @@ function Home() {
             setActiveIdx(sw.realIndex);
             updateBg(sw.realIndex);
             if (bgRef.current) {
-              const total = stations.length - 1 || 1;
-              const pct   = sw.realIndex / total;
-              const x     = (pct - 0.5) * -60;
-              const y     = Math.sin(pct * Math.PI) * -18;
-              bgRef.current.style.transform = `translate(${x}px,${y}px) scale(1.08)`;
+              const total = stations.length - 1 || 1, pct = sw.realIndex / total;
+              bgRef.current.style.transform = `translate(${(pct-.5)*-60}px,${Math.sin(pct*Math.PI)*-18}px) scale(1.08)`;
             }
-            const total2 = stations.length - 1 || 1;
-            const pct2   = sw.realIndex / total2;
-            const base   = (pct2 - 0.5);
+            const total2 = stations.length - 1 || 1, pct2 = sw.realIndex / total2, base = pct2 - .5;
             if (lsfarRef.current)  lsfarRef.current.style.transform  = `translateX(${base * -35}px)`;
             if (lsmidRef.current)  lsmidRef.current.style.transform  = `translateX(${base * -70}px)`;
             if (lsnearRef.current) lsnearRef.current.style.transform = `translateX(${base * -110}px)`;
@@ -768,41 +579,27 @@ function Home() {
   const openStation = useCallback((s) => {
     const cardEl = cardRefs.current[s.id];
     if (cardEl) {
-      const rect  = cardEl.getBoundingClientRect();
-      const vw    = window.innerWidth;
-      const vh    = window.innerHeight;
-      const top   = `${(rect.top   / vh * 100).toFixed(2)}%`;
-      const right = `${((vw - rect.right)  / vw * 100).toFixed(2)}%`;
-      const bot   = `${((vh - rect.bottom) / vh * 100).toFixed(2)}%`;
-      const left  = `${(rect.left  / vw * 100).toFixed(2)}%`;
+      const rect = cardEl.getBoundingClientRect(), vw = window.innerWidth, vh = window.innerHeight;
       const shell = cardEl.closest('.rs-shell');
       if (shell) {
-        shell.style.setProperty('--exp-t',   top);
-        shell.style.setProperty('--exp-r',   right);
-        shell.style.setProperty('--exp-b',   bot);
-        shell.style.setProperty('--exp-l',   left);
+        shell.style.setProperty('--exp-t', `${(rect.top/vh*100).toFixed(2)}%`);
+        shell.style.setProperty('--exp-r', `${((vw-rect.right)/vw*100).toFixed(2)}%`);
+        shell.style.setProperty('--exp-b', `${((vh-rect.bottom)/vh*100).toFixed(2)}%`);
+        shell.style.setProperty('--exp-l', `${(rect.left/vw*100).toFixed(2)}%`);
         shell.style.setProperty('--exp-dur', '.42s');
       }
     }
-    setClosing(false);
-    setSelected(s);
+    setClosing(false); setSelected(s);
   }, []);
 
   const closeStation = useCallback(() => {
-    setClosing(true);
-    setTimeout(() => { setClosing(false); setSelected(null); }, 340);
+    setClosing(true); setTimeout(() => { setClosing(false); setSelected(null); }, 340);
   }, []);
 
   const handleLogin  = (u,t) => { localStorage.setItem('token',t); localStorage.setItem('user',JSON.stringify(u)); setUser(u); };
   const handleLogout = () => { localStorage.removeItem('token'); localStorage.removeItem('user'); setUser(null); setStations([]); };
-
-  const filtered = useMemo(() => q.trim()
-    ? stations.filter(s => s.name.toLowerCase().includes(q.toLowerCase()) || (s.description||'').toLowerCase().includes(q.toLowerCase()))
-    : stations,
-  [stations, q]);
-  const initials = useMemo(() =>
-    user?.name?.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase() || 'U',
-  [user]);
+  const filtered = useMemo(() => q.trim() ? stations.filter(s => s.name.toLowerCase().includes(q.toLowerCase()) || (s.description||'').toLowerCase().includes(q.toLowerCase())) : stations, [stations, q]);
+  const initials = useMemo(() => user?.name?.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase() || 'U', [user]);
 
   if (!user) return <AuthScreen onLogin={handleLogin} />;
 
@@ -813,21 +610,14 @@ function Home() {
         <div className="rs-bg" ref={bgRef} />
         <div className="rs-color-overlay" style={{ background: bgColor }} />
 
-        {TRACKS.map((top,i)=>(
-          <div key={i} className="rs-track" style={{top:`${top}%`,'--td':`${DURS[i]}s`,'--tdd':`${-i*1.5}s`}} />
-        ))}
-        {STNS.map((s,i)=>(
-          <div key={i} className="rs-stn" style={{top:`${8+i*15}%`,'--sd':`${STN_DUR[i]}s`,'--sdd':`${-i*3}s`}}>{s}</div>
-        ))}
+        {TRACKS.map((top,i)=>(<div key={i} className="rs-track" style={{top:`${top}%`,'--td':`${DURS[i]}s`,'--tdd':`${-i*1.5}s`}}/>))}
+        {STNS.map((s,i)=>(<div key={i} className="rs-stn" style={{top:`${8+i*15}%`,'--sd':`${STN_DUR[i]}s`,'--sdd':`${-i*3}s`}}>{s}</div>))}
 
-        {/* ── LANDSCAPE ── */}
         <div className="rs-landscape">
           <LandscapeFar refProp={lsfarRef} />
           <LandscapeMid refProp={lsmidRef} />
           <LandscapeNear refProp={lsnearRef} />
         </div>
-
-        {/* ── TRAIN ── */}
         <TrainScene refProp={trainRef} />
 
         {selected && (
@@ -846,8 +636,7 @@ function Home() {
               <div className="rs-topbar-r">
                 {user?.is_admin && (
                   <button className="rs-add-btn" onClick={()=>navigate('/admin/add')}>
-                    <PlusCircle size={13} />
-                    <span className="rs-add-btn-txt">Nova estação</span>
+                    <PlusCircle size={13} /><span className="rs-add-btn-txt">Nova estação</span>
                   </button>
                 )}
                 <div className="rs-user-pill">
@@ -864,59 +653,36 @@ function Home() {
           <div className="rs-content">
             {tab === 'list' && (
               loading ? (
-                <div className="rs-loading">
-                  <div className="rs-spin" />
-                  <span className="rs-loading-txt">A carregar estações…</span>
-                </div>
+                <div className="rs-loading"><div className="rs-spin" /><span className="rs-loading-txt">A carregar estações…</span></div>
               ) : (
                 <div className="rs-coverflow-view">
                   <div className="rs-hero">
                     <div className="rs-eyebrow">Rede Ferroviária Nacional</div>
                     <h1 className="rs-title">Descobre <em>Portugal</em></h1>
                   </div>
-                  <div className="rs-slide-counter">
-                    <span>{activeIdx + 1}</span> / {stations.length}
-                  </div>
-
+                  <div className="rs-slide-counter"><span>{activeIdx + 1}</span> / {stations.length}</div>
                   <div className="rs-swiper-wrap">
                     <div className="swiper rs-swiper" ref={swiperEl}>
                       <div className="swiper-wrapper">
                         {stations.map((s, i) => (
                           <div key={s.id} className="swiper-slide">
-                            <div
-                              className="rs-card"
-                              ref={el => { if (el) cardRefs.current[s.id] = el; }}
-                              onClick={() => openStation(s)}
-                            >
+                            <div className="rs-card" ref={el => { if (el) cardRefs.current[s.id] = el; }} onClick={() => openStation(s)}>
                               {s.image_url ? (
-                                <img
-                                  ref={el => { if (el) imgRefs.current[s.id] = el; }}
-                                  src={s.image_url}
-                                  alt={s.name}
-                                />
+                                <img ref={el => { if (el) imgRefs.current[s.id] = el; }} src={s.image_url} alt={s.name} />
                               ) : (
                                 <div className="rs-card-ph" style={{ background:`linear-gradient(160deg,${BG_GRADS[i%BG_GRADS.length]})` }} />
                               )}
                               <div className="rs-card-frost" />
                               <div className="rs-card-ov-top" />
                               <div className="rs-card-ov-bot" />
-
-                              {occCounts[s.id] > 0 && (
-                                <div className="rs-card-occ-badge">
-                                  <TriangleAlert size={9} />
-                                  {occCounts[s.id]} ocorr.
-                                </div>
-                              )}
-
+                              {occCounts[s.id] > 0 && (<div className="rs-card-occ-badge"><TriangleAlert size={9} />{occCounts[s.id]} ocorr.</div>)}
                               <div className="rs-card-body">
                                 <div className="rs-card-badge">{getLine(s.name)}</div>
                                 <div className="rs-card-name">{s.name}</div>
                                 <div className="rs-card-loc"><MapPin size={10} /> Portugal</div>
                               </div>
                               <div className="rs-card-tap">
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.8)" strokeWidth="2.5">
-                                  <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-                                </svg>
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.8)" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                               </div>
                             </div>
                           </div>
@@ -924,59 +690,29 @@ function Home() {
                       </div>
                       <div className="swiper-pagination"></div>
                     </div>
-
                     <div className="rs-nav-arrows">
-                      <button className="rs-nav-btn" onClick={() => swiperObj.current?.slidePrev()}>
-                        <ChevronLeft size={16} />
-                      </button>
-                      <button className="rs-nav-btn" onClick={() => swiperObj.current?.slideNext()}>
-                        <ChevronRight size={16} />
-                      </button>
+                      <button className="rs-nav-btn" onClick={() => swiperObj.current?.slidePrev()}><ChevronLeft size={16} /></button>
+                      <button className="rs-nav-btn" onClick={() => swiperObj.current?.slideNext()}><ChevronRight size={16} /></button>
                     </div>
                   </div>
                 </div>
               )
             )}
-
-            {tab === 'map' && (
-              <div className="rs-map">
-                <StationMap stations={stations} onStationSelect={openStation} />
-              </div>
-            )}
+            {tab === 'map' && (<div className="rs-map"><StationMap stations={stations} onStationSelect={openStation} /></div>)}
           </div>
 
           {searchOpen && (
             <div className="rs-search-overlay">
               <div className="rs-search-box">
                 <Search size={16} color="rgba(167,139,250,.5)" style={{ flexShrink:0 }} />
-                <input
-                  autoFocus
-                  placeholder="Pesquisar estação…"
-                  value={q}
-                  onChange={e => setQ(e.target.value)}
-                  inputMode="search"
-                />
-                {q && (
-                  <button className="rs-search-clear" onClick={() => setQ('')}>
-                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                    </svg>
-                  </button>
-                )}
+                <input autoFocus placeholder="Pesquisar estação…" value={q} onChange={e => setQ(e.target.value)} inputMode="search" />
+                {q && (<button className="rs-search-clear" onClick={() => setQ('')}><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>)}
               </div>
               <div className="rs-search-results">
                 {filtered.length === 0 && <div className="rs-search-empty">Nenhuma estação encontrada.</div>}
                 {filtered.map((s, i) => (
-                  <div
-                    key={s.id}
-                    className="rs-search-result"
-                    style={{ '--ri': `${i * 0.05}s` }}
-                    onClick={() => { setSearchOpen(false); setQ(''); openStation(s); }}
-                  >
-                    {s.image_url
-                      ? <img src={s.image_url} alt={s.name} className="rs-search-result-img" />
-                      : <div className="rs-search-result-ph" />
-                    }
+                  <div key={s.id} className="rs-search-result" style={{ '--ri': `${i * 0.05}s` }} onClick={() => { setSearchOpen(false); setQ(''); openStation(s); }}>
+                    {s.image_url ? <img src={s.image_url} alt={s.name} className="rs-search-result-img" /> : <div className="rs-search-result-ph" />}
                     <div>
                       <div className="rs-search-result-name">{s.name}</div>
                       <div className="rs-search-result-sub">{getLine(s.name)}</div>
@@ -990,34 +726,18 @@ function Home() {
           <div className="rs-botnav">
             <div className="rs-botnav-inner">
               <button className={`rs-nb ${tab==='list'&&!searchOpen?'on':''}`} onClick={()=>{ setSearchOpen(false); setTab('list'); }}>
-                <span className="rs-nb-ico">
-                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
-                    <circle cx="3.5" cy="6" r="1.5" fill="currentColor" stroke="none"/>
-                    <circle cx="3.5" cy="12" r="1.5" fill="currentColor" stroke="none"/>
-                    <circle cx="3.5" cy="18" r="1.5" fill="currentColor" stroke="none"/>
-                  </svg>
-                </span>
+                <span className="rs-nb-ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3.5" cy="6" r="1.5" fill="currentColor" stroke="none"/><circle cx="3.5" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="3.5" cy="18" r="1.5" fill="currentColor" stroke="none"/></svg></span>
                 <span className="rs-nb-lbl">Estações</span>
               </button>
               <button className={`rs-nb ${tab==='map'&&!searchOpen?'on':''}`} onClick={()=>{ setSearchOpen(false); setTab('map'); }}>
-                <span className="rs-nb-ico">
-                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
-                    <line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/>
-                  </svg>
-                </span>
+                <span className="rs-nb-ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg></span>
                 <span className="rs-nb-lbl">Mapa</span>
               </button>
             </div>
-            <button
-              className={`rs-nb-search ${searchOpen?'on':''}`}
-              onClick={() => { setSearchOpen(v=>!v); if (searchOpen) setQ(''); }}
-            >
+            <button className={`rs-nb-search ${searchOpen?'on':''}`} onClick={() => { setSearchOpen(v=>!v); if (searchOpen) setQ(''); }}>
               {searchOpen ? <X size={17} /> : <Search size={17} />}
             </button>
           </div>
-
         </div>
       </div>
     </>
@@ -1025,14 +745,43 @@ function Home() {
 }
 
 function App() {
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
+  useEffect(() => {
+    const handleOffline = () => setIsOffline(true);
+    const handleOnline  = () => setIsOffline(false);
+    window.addEventListener('offline', handleOffline);
+    window.addEventListener('online',  handleOnline);
+    return () => {
+      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('online',  handleOnline);
+    };
+  }, []);
+
   return (
-    <Router>
-      <Routes>
-        <Route path="/"               element={<Home />} />
-        <Route path="/admin/add"      element={<AddStation />} />
-        <Route path="/admin/edit/:id" element={<EditStation />} />
-      </Routes>
-    </Router>
+    <>
+      {isOffline && (
+        <div style={{
+          position:'fixed', top:0, left:0, right:0, zIndex:9999,
+          background:'rgba(200,30,30,.92)', backdropFilter:'blur(8px)',
+          color:'#fff', textAlign:'center', padding:'10px 16px',
+          fontSize:'13px', fontWeight:600, fontFamily:"'DM Sans',sans-serif",
+          letterSpacing:'.02em', boxShadow:'0 2px 12px rgba(0,0,0,.4)',
+          borderBottom:'1px solid rgba(255,100,100,.3)',
+        }}>
+          ⚠️ Sem ligação à rede. A mostrar dados guardados offline.
+        </div>
+      )}
+      <div style={isOffline ? { paddingTop:'42px' } : {}}>
+        <Router>
+          <Routes>
+            <Route path="/"               element={<Home />} />
+            <Route path="/admin/add"      element={<AddStation />} />
+            <Route path="/admin/edit/:id" element={<EditStation />} />
+          </Routes>
+        </Router>
+      </div>
+    </>
   );
 }
 

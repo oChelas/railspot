@@ -7,7 +7,12 @@
     "dev": "concurrently \"npm run server\" \"npm run client\""
   },
   "dependencies": {
+    "@splinetool/react-spline": "^4.1.0",
+    "@splinetool/runtime": "^1.12.72",
     "framer-motion": "^12.38.0",
     "lucide-react": "^0.577.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }
