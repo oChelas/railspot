@@ -771,6 +771,7 @@ function StationDetails({ station, onBack }) {
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                       Comentários <span style={{color:'rgba(255,255,255,.15)'}}>({reviews.length})</span>
                     </div>
+                    
                     {user ? (
                       <form onSubmit={handleSubmitReview} className="sd-comment-form">
                         <input className="sd-comment-input" value={newReview} onChange={e=>setNewReview(e.target.value)} placeholder="Escreve algo…" />
@@ -779,19 +780,34 @@ function StationDetails({ station, onBack }) {
                     ) : (
                       <div className="sd-no-auth">Faz login para participar na conversa.</div>
                     )}
+                    
                     {reviews.length === 0 && <div className="sd-empty">Sê o primeiro a comentar!</div>}
-                    {reviews.map(r => (
-                      <div key={r.id} className="sd-comment-item">
-                        <div className="sd-comment-header">
-                          <div className="sd-comment-user">
-                            <div className="sd-comment-av">{(r.user_name?.[0]||'U').toUpperCase()}</div>
-                            <span className="sd-comment-name">{r.user_name}</span>
+                    
+                    {reviews.map(r => {
+                      // 1. Quem pode apagar
+                      const canDelete = user?.is_admin || user?.id === r.user_id;
+                      // 2. Lógica ultra-segura para a inicial do nome 
+                      const userInitial = r.user_name ? r.user_name.charAt(0).toUpperCase() : 'U';
+                      
+                      return (
+                        <div key={r.id} className="sd-comment-item">
+                          <div className="sd-comment-header">
+                            <div className="sd-comment-user">
+                              <div className="sd-comment-av">{userInitial}</div>
+                              <span className="sd-comment-name">{r.user_name}</span>
+                            </div>
+                            
+                            {canDelete && (
+                              <button className="sd-comment-del" onClick={()=>handleDeleteReview(r.id)} title="Apagar Comentário">
+                                <Trash2 size={13}/>
+                              </button>
+                            )}
                           </div>
-                          {user?.is_admin && <button className="sd-comment-del" onClick={()=>handleDeleteReview(r.id)}><Trash2 size={13}/></button>}
+                          <div className="sd-comment-text">{r.content}</div>
                         </div>
-                        <div className="sd-comment-text">{r.content}</div>
-                      </div>
-                    ))}
+                      );
+                    })}
+                    
                   </div>
                 </div>
               )}

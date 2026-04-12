@@ -74,3 +74,50 @@ exports.login = async (req, res) => {
     res.status(500).json({ error: 'Erro interno' });
   }
 };
+
+// Função para atualizar o perfil (RF16)
+exports.updateProfile = async (req, res) => {
+  const { name, email, password } = req.body;
+  const userId = req.user.id; // O ID vem do token via middleware
+
+  try {
+    // 1. Verificar se o novo email já está a ser usado por outro utilizador
+    if (email) {
+      const emailCheck = await db.query(
+        'SELECT id FROM users WHERE email = $1 AND id != $2',
+        [email, userId]
+      );
+      if (emailCheck.rows.length > 0) {
+        return res.status(400).json({ error: 'Este e-mail já está em uso.' });
+      }
+    }
+
+    // 2. Preparar a query dinamicamente
+    let query = 'UPDATE users SET name = $1, email = $2';
+    let values = [name, email];
+
+    // 3. Se o utilizador enviou uma nova password, vamos encriptá-la
+    if (password && password.trim() !== "") {
+      const salt = await bcrypt.genSalt(10);
+      const passwordHash = await bcrypt.hash(password, salt);
+      query += ', password_hash = $3 WHERE id = $4';
+      values.push(passwordHash, userId);
+    } else {
+      query += ' WHERE id = $3';
+      values.push(userId);
+    }
+
+    const updatedUser = await db.query(
+      `${query} RETURNING id, name, email, is_admin`,
+      values
+    );
+
+    res.json({
+      message: 'Perfil atualizado com sucesso!',
+      user: updatedUser.rows
+    });
+  } catch (error) {
+    console.error('Erro ao atualizar perfil:', error);
+    res.status(500).json({ error: 'Erro interno ao atualizar perfil.' });
+  }
+};

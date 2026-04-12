@@ -14,6 +14,7 @@ import StationDetails from './components/StationDetails';
 import AuthScreen     from './components/AuthScreen';
 import AddStation     from './components/AddStation';
 import EditStation    from './components/EditStation';
+import Profile from './components/Profile';
 
 /* ─────────────────────────────────────────────────────────
    2. CURATED PALETTE — reliable colours, no CORS needed
@@ -490,7 +491,7 @@ const STNS     = ['Lisboa Oriente','Porto Campanhã','Aveiro · Coimbra-B','Faro
 const STN_DUR  = [16,22,18,14,20,17];
 const BG_GRADS = ['#12062a,#1e0d40','#06141a,#0d2a35','#0a0a1f,#15153d','#1a1000,#332000','#160618,#2a0d30','#071414,#0e2828'];
 
-function Home() {
+function Home({ user, setUser }) {
   const navigate   = useNavigate();
   const swiperEl   = useRef(null);
   const swiperObj  = useRef(null);
@@ -504,9 +505,8 @@ function Home() {
   const lsnearRef  = useRef(null);
   const savedIdx   = useRef(parseInt(sessionStorage.getItem('rs_slide_idx') || '0', 10));
 
-  const [user, setUser] = useState(() => {
-    try { const u=localStorage.getItem('user'); const t=localStorage.getItem('token'); return u&&t?JSON.parse(u):null; } catch{return null;}
-  });
+  // O useState do user desapareceu daqui!
+  
   const [stations, setStations]     = useState([]);
   const [loading, setLoading]       = useState(true);
   const [tab, setTab]               = useState('list');
@@ -639,9 +639,13 @@ function Home() {
                     <PlusCircle size={13} /><span className="rs-add-btn-txt">Nova estação</span>
                   </button>
                 )}
-                <div className="rs-user-pill">
+                <div 
+                  className="rs-user-pill cursor-pointer hover:bg-white/10 transition-colors" 
+                  onClick={() => navigate('/profile')}
+                  title="Ver o meu perfil"
+                >
                   <div className="rs-user-av">{initials}</div>
-                  <span className="rs-user-nm">{user?.name?.split(' ')[0]}</span>
+                  <span className="rs-user-nm">{user?.name?.split(' ')}</span>
                 </div>
                 <button className="rs-logout" onClick={handleLogout} title="Sair">
                   <LogOut size={14} color="rgba(252,165,165,.8)" />
@@ -747,6 +751,31 @@ function Home() {
 function App() {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
+  // 1. 🟢 ESTADO GLOBAL: O App agora é o "dono" da informação do utilizador
+  const [user, setUser] = useState(() => {
+    try { 
+      const u = localStorage.getItem('user'); 
+      const t = localStorage.getItem('token'); 
+      return u && t ? JSON.parse(u) : null; 
+    } catch { return null; }
+  });
+
+  // 2. 🟢 OUVINTE DE EVENTOS: O App fica à escuta do Profile
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      try {
+        const u = localStorage.getItem('user');
+        if (u) setUser(JSON.parse(u));
+      } catch (e) {
+        console.error("Erro ao atualizar user via evento", e);
+      }
+    };
+
+    window.addEventListener('profile-updated', handleProfileUpdate);
+    return () => window.removeEventListener('profile-updated', handleProfileUpdate);
+  }, []);
+
+  // (O teu código original do offline mantém-se)
   useEffect(() => {
     const handleOffline = () => setIsOffline(true);
     const handleOnline  = () => setIsOffline(false);
@@ -775,7 +804,9 @@ function App() {
       <div style={isOffline ? { paddingTop:'42px' } : {}}>
         <Router>
           <Routes>
-            <Route path="/"               element={<Home />} />
+            {/* 3. 🟢 PASSAGEM DE PROPS: O App envia o user para a Home */}
+            <Route path="/"               element={<Home user={user} setUser={setUser} />} />
+            <Route path="/profile"        element={<Profile />} />
             <Route path="/admin/add"      element={<AddStation />} />
             <Route path="/admin/edit/:id" element={<EditStation />} />
           </Routes>
