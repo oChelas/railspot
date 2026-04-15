@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
-import { LogOut, PlusCircle, Train, MapPin, ChevronLeft, ChevronRight, Search, X, TriangleAlert } from 'lucide-react';
+import { LogOut, PlusCircle, Train, MapPin, ChevronLeft, ChevronRight, Search, X, TriangleAlert, BarChart3 } from 'lucide-react';
 
 import StationMap     from './components/StationMap';
 import StationDetails from './components/StationDetails';
@@ -15,6 +15,7 @@ import AuthScreen     from './components/AuthScreen';
 import AddStation     from './components/AddStation';
 import EditStation    from './components/EditStation';
 import Profile from './components/Profile';
+import AdminDashboard from './components/AdminDashboard';
 
 /* ─────────────────────────────────────────────────────────
    2. CURATED PALETTE — reliable colours, no CORS needed
@@ -635,9 +636,14 @@ function Home({ user, setUser }) {
               </div>
               <div className="rs-topbar-r">
                 {user?.is_admin && (
-                  <button className="rs-add-btn" onClick={()=>navigate('/admin/add')}>
-                    <PlusCircle size={13} /><span className="rs-add-btn-txt">Nova estação</span>
-                  </button>
+                  <>
+                    <button className="rs-add-btn" onClick={() => navigate('/admin/dashboard')} style={{ marginRight: '4px' }}>
+                      <BarChart3 size={13} /><span className="rs-add-btn-txt">Estatísticas</span>
+                    </button>
+                    <button className="rs-add-btn" onClick={()=>navigate('/admin/add')}>
+                      <PlusCircle size={13} /><span className="rs-add-btn-txt">Nova estação</span>
+                    </button>
+                  </>
                 )}
                 <div 
                   className="rs-user-pill cursor-pointer hover:bg-white/10 transition-colors" 
@@ -809,6 +815,7 @@ function App() {
             <Route path="/profile"        element={<Profile />} />
             <Route path="/admin/add"      element={<AddStation />} />
             <Route path="/admin/edit/:id" element={<EditStation />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
           </Routes>
         </Router>
       </div>
