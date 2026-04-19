@@ -6,6 +6,7 @@ import {
   Info, TriangleAlert, X, Plus
 } from 'lucide-react';
 import RouteMap from './RouteMap';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 /* ─── DISTANCE UTIL ───────────────────────────────────────── */
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -522,19 +523,19 @@ function StationDetails({ station, onBack }) {
 
   const fetchOccurrences = useCallback(async () => {
     if (!stationId) return;
-    try { const r = await fetch(`http://localhost:5000/api/occurrences/${stationId}`); const d = await r.json(); setOccurrences(Array.isArray(d) ? d : []); }
+    try { const r = await fetch(`${API_URL}/api/occurrences/${stationId}`); const d = await r.json(); setOccurrences(Array.isArray(d) ? d : []); }
     catch { console.error('Erro ocorrências'); }
   }, [stationId]);
 
   const fetchSchedules = useCallback(async () => {
     if (!stationId) return;
-    try { const r = await fetch(`http://localhost:5000/api/schedules/${stationId}`); const d = await r.json(); setSchedules(Array.isArray(d) ? d : []); }
+    try { const r = await fetch(`${API_URL}/api/schedules/${stationId}`); const d = await r.json(); setSchedules(Array.isArray(d) ? d : []); }
     catch { console.error('Erro horários'); }
   }, [stationId]);
 
   useEffect(() => {
     if (stationId) {
-      fetch(`http://localhost:5000/api/reviews/${stationId}`).then(r=>r.json()).then(d=>setReviews(Array.isArray(d)?d:[])).catch(()=>{});
+      fetch(`${API_URL}/api/reviews/${stationId}`).then(r=>r.json()).then(d=>setReviews(Array.isArray(d)?d:[])).catch(()=>{});
       fetchSchedules(); fetchOccurrences();
     }
   }, [stationId, fetchSchedules, fetchOccurrences]);
@@ -546,7 +547,7 @@ function StationDetails({ station, onBack }) {
     e.preventDefault(); if (!newReview.trim()) return;
     setSubmitting(true); const token = localStorage.getItem('token');
     try {
-      const r = await fetch(`http://localhost:5000/api/reviews/${stationId}`, { method:'POST', headers:{'Content-Type':'application/json','x-auth-token':token}, body:JSON.stringify({content:newReview}) });
+      const r = await fetch(`${API_URL}/api/reviews/${stationId}`, { method:'POST', headers:{'Content-Type':'application/json','x-auth-token':token}, body:JSON.stringify({content:newReview}) });
       if (r.ok) { const s = await r.json(); setReviews([s,...reviews]); setNewReview(''); showToast('Comentário adicionado!','success'); }
       else { const err = await r.json().catch(()=>({})); showToast(err.error||'Erro.','error'); }
     } catch { showToast('Erro de ligação.','error'); } finally { setSubmitting(false); }
@@ -554,14 +555,14 @@ function StationDetails({ station, onBack }) {
 
   const handleDeleteReview = id => openDialog('Apagar Comentário','Tens a certeza que queres eliminar este comentário?','danger', async () => {
     const token = localStorage.getItem('token');
-    const r = await fetch(`http://localhost:5000/api/reviews/${id}`,{method:'DELETE',headers:{'x-auth-token':token}});
+    const r = await fetch(`${API_URL}/api/reviews/${id}`,{method:'DELETE',headers:{'x-auth-token':token}});
     if (r.ok) { setReviews(reviews.filter(x=>x.id!==id)); showToast('Comentário apagado.','info'); } else showToast('Erro.','error');
   });
 
   /* ── Station ── */
   const handleDeleteStation = () => openDialog('Eliminar Estação',`Tens a certeza absoluta que pretendes eliminar a ${station.name}? Todos os dados serão apagados.`,'danger', async () => {
     const token = localStorage.getItem('token');
-    const r = await fetch(`http://localhost:5000/api/stations/${stationId}`,{method:'DELETE',headers:{'x-auth-token':token}});
+    const r = await fetch(`${API_URL}/api/stations/${stationId}`,{method:'DELETE',headers:{'x-auth-token':token}});
     if (r.ok) { showToast('Estação eliminada!','success'); setTimeout(()=>{ onBack(); window.location.reload(); },1500); } else showToast('Erro.','error');
   });
 
@@ -573,7 +574,7 @@ function StationDetails({ station, onBack }) {
     navigator.geolocation.getCurrentPosition(async pos => {
       const token = localStorage.getItem('token');
       try {
-        const r = await fetch(`http://localhost:5000/api/occurrences/${stationId}`,{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':token},body:JSON.stringify({description:newOccurrence,latitude:pos.coords.latitude,longitude:pos.coords.longitude})});
+        const r = await fetch(`${API_URL}/api/occurrences/${stationId}`,{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':token},body:JSON.stringify({description:newOccurrence,latitude:pos.coords.latitude,longitude:pos.coords.longitude})});
         if (r.ok) { showToast('Ocorrência enviada!','success'); setNewOccurrence(''); fetchOccurrences(); }
         else { const err = await r.json().catch(()=>({})); showToast(err.error||'Erro.','error'); }
       } catch { showToast('Erro de conexão.','error'); } finally { setSubmitting(false); }
@@ -582,7 +583,7 @@ function StationDetails({ station, onBack }) {
 
   const handleDeleteOccurrence = id => openDialog('Resolver Ocorrência','Marcar como resolvida?','success', async () => {
     const token = localStorage.getItem('token');
-    const r = await fetch(`http://localhost:5000/api/occurrences/${id}`,{method:'DELETE',headers:{'x-auth-token':token}});
+    const r = await fetch(`${API_URL}/api/occurrences/${id}`,{method:'DELETE',headers:{'x-auth-token':token}});
     if (r.ok) { setOccurrences(occurrences.filter(o=>o.id!==id)); showToast('Ocorrência resolvida.','success'); } else showToast('Erro.','error');
   });
 
@@ -591,7 +592,7 @@ function StationDetails({ station, onBack }) {
     e.preventDefault(); if (!newSchedule.destination||!newSchedule.departure_time) return showToast('Preenche todos os campos.','warning');
     setSubmitting(true); const token = localStorage.getItem('token');
     try {
-      const r = await fetch(`http://localhost:5000/api/schedules/${stationId}`,{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':token},body:JSON.stringify({departureTime:newSchedule.departure_time,destination:newSchedule.destination,trainType:newSchedule.train_type})});
+      const r = await fetch(`${API_URL}/api/schedules/${stationId}`,{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':token},body:JSON.stringify({departureTime:newSchedule.departure_time,destination:newSchedule.destination,trainType:newSchedule.train_type})});
       if (r.ok) { showToast('Horário adicionado!','success'); setNewSchedule({train_type:'Urbano',destination:'',departure_time:''}); fetchSchedules(); }
       else { const err = await r.json().catch(()=>({})); showToast(err.error||'Erro.','error'); }
     } catch { showToast('Erro de conexão.','error'); } finally { setSubmitting(false); }
@@ -599,7 +600,7 @@ function StationDetails({ station, onBack }) {
 
   const handleDeleteSchedule = id => openDialog('Apagar Horário','Tens a certeza que pretendes apagar este horário?','danger', async () => {
     const token = localStorage.getItem('token');
-    const r = await fetch(`http://localhost:5000/api/schedules/${id}`,{method:'DELETE',headers:{'x-auth-token':token}});
+    const r = await fetch(`${API_URL}/api/schedules/${id}`,{method:'DELETE',headers:{'x-auth-token':token}});
     if (r.ok) { setSchedules(schedules.filter(s=>s.id!==id)); showToast('Horário apagado.','info'); } else showToast('Erro.','error');
   });
 

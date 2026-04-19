@@ -90,6 +90,7 @@ const CSS = `
 const TRACKS = [15, 30, 50, 68, 85];
 const DURS   = [7, 11, 9, 13, 8];
 const STNS   = ['Lisboa Oriente', 'Porto Campanhã', 'Aveiro · Coimbra-B', 'Faro · Setúbal', 'Braga · Guimarães'];
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 function EditStation() {
   const navigate  = useNavigate();
@@ -105,7 +106,7 @@ function EditStation() {
   };
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/stations')
+    fetch(`${API_URL}/api/stations`)
       .then(r => r.json())
       .then(data => {
         const s = data.find(x => String(x.id) === String(id));
@@ -122,7 +123,7 @@ function EditStation() {
     setLoading(true);
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:5000/api/stations/${id}`, {
+      const res = await fetch(`${API_URL}/api/stations/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'x-auth-token': token },
         body: JSON.stringify(formData)

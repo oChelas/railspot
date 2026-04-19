@@ -17,6 +17,8 @@ import EditStation    from './components/EditStation';
 import Profile from './components/Profile';
 import AdminDashboard from './components/AdminDashboard';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 /* ─────────────────────────────────────────────────────────
    2. CURATED PALETTE — reliable colours, no CORS needed
    Each entry: [r, g, b] for the atmospheric glow
@@ -519,15 +521,16 @@ function Home({ user, setUser }) {
   const [q, setQ]                   = useState('');
   const [occCounts, setOccCounts]   = useState({});
 
+
   useEffect(() => {
     if (!user) return;
-    fetch('http://localhost:5000/api/stations').then(r=>r.json()).then(d=>{ setStations(d); setLoading(false); }).catch(()=>setLoading(false));
+    fetch(`${API_URL}/api/stations`).then(r=>r.json()).then(d=>{ setStations(d); setLoading(false); }).catch(()=>setLoading(false));
   }, [user]);
 
   useEffect(() => {
     if (!stations.length) return;
     stations.forEach(s => {
-      fetch(`http://localhost:5000/api/occurrences/${s.id}`).then(r=>r.json()).then(data => {
+      fetch(`${API_URL}/api/occurrences/${s.id}`).then(r=>r.json()).then(data => {
         if (Array.isArray(data) && data.length > 0) setOccCounts(prev => ({ ...prev, [s.id]: data.length }));
       }).catch(() => {});
     });
