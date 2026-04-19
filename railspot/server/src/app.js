@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors'); 
 const app = express();
@@ -14,7 +15,7 @@ const backupRoutes = require('./routes/backupRoutes');
 // --- 🚨 MIDDLEWARE DE CORS CORRIGIDO ---
 // Permite que o React (porta 5173) consiga enviar pedidos e tokens para o Express
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Adicionado OPTIONS por segurança para preflights
   // Adicionado 'x-auth-token' para permitir a passagem do token do frontend!
   allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token'] 

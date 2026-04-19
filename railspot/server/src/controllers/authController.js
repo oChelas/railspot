@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 // Segredo para assinar os tokens (num projeto real, isto estaria no .env)
-const JWT_SECRET = 'segredo_super_secreto_railspot'; 
+const JWT_SECRET = process.env.JWT_SECRET; 
 
 exports.register = async (req, res) => {
   const { name, email, password } = req.body;

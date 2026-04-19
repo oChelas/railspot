@@ -18,7 +18,8 @@ export default function AdminDashboard() {
         return;
       }
 
-      const res = await fetch('http://localhost:5000/api/stats', {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const res = await fetch(`${API_URL}/api/stats`, {
         method: 'GET',
         cache: 'no-store',
         headers: { 
@@ -66,7 +67,10 @@ export default function AdminDashboard() {
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             {/* BOTÃO DE BACKUP - Texto encurtado em Mobile para não quebrar */}
             <button 
-              onClick={() => window.open('http://localhost:5000/api/backup', '_blank')}
+              onClick={() => {
+                const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+                window.open(`${API_URL}/api/backup`, '_blank');
+              }}
               className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 px-3 sm:px-4 py-2 rounded-xl transition-colors text-indigo-300 font-semibold text-xs sm:text-sm"
             >
               <DownloadCloud size={16} />
