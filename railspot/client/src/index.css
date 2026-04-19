@@ -2,6 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Configurações globais para evitar flashes brancos e suportar o modo escuro */
+:root {
+  background-color: #0f172a;
+  color-scheme: dark;
+}
+
 body {
-  background-color: #f3f4f6;
+  margin: 0;
+  /* Altera para a cor escura do teu header para eliminar a borda branca */
+  background-color: #0f172a; 
+  
+  /* CRUCIAL: Estas linhas gerem o espaço da notch (câmara) e da barra inferior no iPhone */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  
+  min-height: 100vh;
+  /* Garante que o conteúdo ocupa todo o espaço disponível */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Garante que o fundo se mantém escuro mesmo ao fazer scroll elástico no iOS */
+html {
+  background-color: #0f172a;
 }
